@@ -5,6 +5,11 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const readFetchInit: RequestInit & { next?: { revalidate?: number } } =
+    process.env.NODE_ENV === "production"
+        ? { next: { revalidate: 60 } }
+        : { cache: "no-store" };
+
 export async function fetchPrompts(params: Record<string, string | number | undefined>): Promise<PromptListResponse> {
     try {
         // Attempt real API fetch
@@ -16,8 +21,8 @@ export async function fetchPrompts(params: Record<string, string | number | unde
         });
 
         const res = await fetch(url.toString(), {
-            cache: "no-store",
-            headers: { "Content-Type": "application/json" }
+            ...readFetchInit,
+            headers: { "Accept": "application/json" }
         });
         if (!res.ok) throw new Error(`API returned ${res.status}`);
         return await res.json();
@@ -70,7 +75,7 @@ export async function fetchPrompts(params: Record<string, string | number | unde
 
 export async function fetchPrompt(slug: string): Promise<Prompt | null> {
     try {
-        const res = await fetch(`${API_BASE}/v1/prompts/${slug}`, { cache: "no-store" });
+        const res = await fetch(`${API_BASE}/v1/prompts/${slug}`, readFetchInit);
         if (!res.ok) throw new Error("Failed to fetch prompt");
         return await res.json();
     } catch (error) {
@@ -82,7 +87,7 @@ export async function fetchPrompt(slug: string): Promise<Prompt | null> {
 
 export async function fetchTags(): Promise<string[]> {
     try {
-        const res = await fetch(`${API_BASE}/v1/tags`, { cache: "no-store" });
+        const res = await fetch(`${API_BASE}/v1/tags`, readFetchInit);
         if (!res.ok) throw new Error("Failed to fetch tags");
         const data: TagsResponse = await res.json();
         return data.items;
@@ -99,12 +104,11 @@ export async function submitPrompt(data: Partial<Prompt>): Promise<boolean> {
     }
 
     try {
-        const adminKey = process.env.NEXT_PUBLIC_ADMIN_KEY || "demo-key";
-        const res = await fetch(`${API_BASE}/v1/prompts`, {
+        // Submit via Next.js route handler so the admin key can stay server-side.
+        const res = await fetch(`/api/submit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Admin-Key': adminKey
             },
             body: JSON.stringify(data)
         });
@@ -116,10 +120,7 @@ export async function submitPrompt(data: Partial<Prompt>): Promise<boolean> {
         }
         return true;
     } catch (error) {
-        console.warn("Real submission failed (likely no admin/backend auth setup yet). Mocking success for demo.", error);
+        console.warn("Submission failed.", error);
+        return false;
     }
-
-    // Mock submission fallthrough for demo purposes
-    await delay(1000);
-    return true;
 }

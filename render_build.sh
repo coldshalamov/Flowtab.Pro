@@ -10,6 +10,3 @@ pip install -r apps/api/requirements.txt
 # We need to set PYTHONPATH so alembic can find 'apps' module
 export PYTHONPATH=$PYTHONPATH:.
 python -m alembic -c apps/api/alembic.ini upgrade head
-
-# Optional: Run seed if you want default data
-# python apps/api/seed.py

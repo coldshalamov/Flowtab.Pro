@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, Heart } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function SiteHeader() {
     return (
@@ -16,7 +17,8 @@ export function SiteHeader() {
                     </nav>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Link href="https://github.com/sponsors/flowtab" target="_blank">
+                    <ThemeToggle />
+                    <Link href="https://github.com/sponsors/flowtab" target="_blank" rel="noopener noreferrer">
                         <Button variant="ghost" size="sm" className="hidden sm:flex text-muted-foreground hover:text-red-500 hover:bg-red-500/10 gap-2">
                             <Heart className="h-4 w-4" />
                             <span>Sponsor</span>
