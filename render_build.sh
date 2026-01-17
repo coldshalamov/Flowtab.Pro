@@ -7,6 +7,9 @@ pip install --upgrade pip
 pip install -r apps/api/requirements.txt
 
 # Run migrations
-# We need to set PYTHONPATH so alembic can find 'apps' module
-export PYTHONPATH=$PYTHONPATH:.
-python -m alembic -c apps/api/alembic.ini upgrade head
+# Add current directory (root) to PYTHONPATH so 'apps.api...' imports work
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+
+# Change to apps/api directory so alembic finds 'script_location = alembic' correctly
+cd apps/api
+python -m alembic upgrade head
