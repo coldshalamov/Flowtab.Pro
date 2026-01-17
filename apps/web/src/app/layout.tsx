@@ -14,24 +14,24 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://flowtab.pro";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Flowtab.Pro - Automated Browser Prompt Library",
+    default: "Flowtab.Pro - Automation Prompt Library",
     template: "%s | Flowtab.Pro",
   },
   description:
-    "Discover and share automated browser prompts for Comet, Playwright, and Opera Neon.",
+    "Discover and share automation prompts and playbooks for web agents.",
   openGraph: {
     type: "website",
     url: siteUrl,
-    title: "Flowtab.Pro - Automated Browser Prompt Library",
+    title: "Flowtab.Pro - Automation Prompt Library",
     description:
-      "Discover and share automated browser prompts for Comet, Playwright, and Opera Neon.",
+      "Discover and share automation prompts and playbooks for web agents.",
     siteName: "Flowtab.Pro",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Flowtab.Pro - Automated Browser Prompt Library",
+    title: "Flowtab.Pro - Automation Prompt Library",
     description:
-      "Discover and share automated browser prompts for Comet, Playwright, and Opera Neon.",
+      "Discover and share automation prompts and playbooks for web agents.",
   },
 };
 

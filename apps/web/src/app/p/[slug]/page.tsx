@@ -3,19 +3,21 @@ import { fetchPrompt } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/CopyButton";
-import { Calendar, Layers, ChevronLeft, Clock, Globe } from "lucide-react";
+import { Layers, ChevronLeft, Clock, Globe } from "lucide-react";
 import type { Metadata } from "next";
 
 export async function generateMetadata(props: {
-    params: { slug: string };
+    params: Promise<{ slug: string }> | { slug: string };
 }): Promise<Metadata> {
-    const prompt = await fetchPrompt(props.params.slug);
+    const params = await Promise.resolve(props.params);
+    const prompt = await fetchPrompt(params.slug);
     if (!prompt) return { title: "Prompt Not Found" };
     return { title: `${prompt.title} // Flowtab.Pro`, description: prompt.summary };
 }
 
-export default async function PromptDetailPage(props: { params: { slug: string } }) {
-    const prompt = await fetchPrompt(props.params.slug);
+export default async function PromptDetailPage(props: { params: Promise<{ slug: string }> | { slug: string } }) {
+    const params = await Promise.resolve(props.params);
+    const prompt = await fetchPrompt(params.slug);
     if (!prompt) notFound();
 
     const jsonString = JSON.stringify(prompt, null, 2);
@@ -33,14 +35,6 @@ export default async function PromptDetailPage(props: { params: { slug: string }
 
                 {/* Header Section */}
                 <div className="space-y-8 mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                    <div className="flex flex-wrap items-center gap-3">
-                        {prompt.worksWith.map(w => (
-                            <div key={w} className="px-3 py-1 bg-secondary border border-border text-[10px] font-bold uppercase tracking-widest text-foreground">
-                                {w}
-                            </div>
-                        ))}
-                    </div>
-
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground uppercase leading-[0.9]">
                         {prompt.title}
                     </h1>
@@ -66,13 +60,13 @@ export default async function PromptDetailPage(props: { params: { slug: string }
                     <div className="grid sm:grid-cols-2 gap-4 sticky top-20 z-20 bg-background/80 backdrop-blur-md p-4 -mx-4 rounded-lg border border-border/40 shadow-sm">
                         <CopyButton
                             text={prompt.promptText}
-                            label="Deploy Prompt"
+                            label="Copy Prompt"
                             variant="default"
                             className="h-12 bg-foreground text-background hover:bg-foreground/90 font-bold uppercase tracking-widest text-xs"
                         />
                         <CopyButton
                             text={jsonString}
-                            label="Export Metadata"
+                            label="Copy Metadata"
                             variant="outline"
                             className="h-12 border-border font-bold uppercase tracking-widest text-xs"
                         />

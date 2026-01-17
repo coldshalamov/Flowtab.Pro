@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { toast } from "sonner";
 import { submitPrompt } from "@/lib/api";
 import { ChevronLeft, Share2 } from "lucide-react";
@@ -16,7 +15,6 @@ export default function SubmitPage() {
     const [formData, setFormData] = useState({
         title: "",
         summary: "",
-        worksWith: [] as string[],
         targetSites: "",
         tags: "",
         promptText: "",
@@ -37,6 +35,7 @@ export default function SubmitPage() {
         try {
             const ok = await submitPrompt({
                 ...formData,
+                worksWith: [],
                 tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
                 targetSites: formData.targetSites.split(",").map(t => t.trim()).filter(Boolean),
                 steps: formData.steps.split("\n").filter(Boolean),
@@ -48,7 +47,6 @@ export default function SubmitPage() {
             setFormData({
                 title: "",
                 summary: "",
-                worksWith: [],
                 targetSites: "",
                 tags: "",
                 promptText: "",
@@ -114,15 +112,6 @@ export default function SubmitPage() {
                                 onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
                                 className="min-h-[80px] bg-background border-border font-medium resize-none"
                             />
-                        </div>
-
-                        <div className="grid gap-3">
-                            <Label className="text-xs uppercase tracking-widest font-bold opacity-60">Operational Context</Label>
-                            <ToggleGroup type="multiple" value={formData.worksWith} onValueChange={(v) => setFormData({ ...formData, worksWith: v })} className="justify-start flex-wrap gap-2">
-                                <ToggleGroupItem value="Comet" className="h-9 px-4 border border-border data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:border-foreground rounded-md text-xs font-bold transition-all">Comet Native</ToggleGroupItem>
-                                <ToggleGroupItem value="Playwright MCP" className="h-9 px-4 border border-border data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:border-foreground rounded-md text-xs font-bold transition-all">Playwright Engine</ToggleGroupItem>
-                                <ToggleGroupItem value="Opera Neon" className="h-9 px-4 border border-border data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:border-foreground rounded-md text-xs font-bold transition-all">Opera Neon</ToggleGroupItem>
-                            </ToggleGroup>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-8">

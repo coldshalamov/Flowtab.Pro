@@ -2,29 +2,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { type Prompt } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { Clock, Globe } from "lucide-react";
 
 export function PromptCard({ prompt }: { prompt: Prompt }) {
-    const worksWith = prompt.worksWith.map(w => w.toLowerCase());
+    const updatedLabel = new Date(prompt.updatedAt).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+    });
+
+    const targetsLabel =
+        prompt.targetSites && prompt.targetSites.length > 0
+            ? prompt.targetSites.length === 1
+                ? prompt.targetSites[0]
+                : `${prompt.targetSites[0]} +${prompt.targetSites.length - 1}`
+            : "Agnostic";
 
     return (
         <Link href={`/p/${prompt.slug}`} className="group block h-full">
             <Card className="h-full transition-all duration-300 bg-card border-border hover:border-foreground/20 hover:shadow-md rounded-lg overflow-hidden flex flex-col">
-                <CardHeader className="space-y-4 pb-4">
-                    <div className="flex justify-between items-start gap-4">
-                        <div className="flex -space-x-1.5 overflow-hidden">
-                            {worksWith.some(w => w.includes('comet')) && (
-                                <div className="h-6 w-6 rounded-full bg-secondary border border-background flex items-center justify-center text-[10px] font-bold text-muted-foreground" title="Comet">C</div>
-                            )}
-                            {worksWith.some(w => w.includes('playwright')) && (
-                                <div className="h-6 w-6 rounded-full bg-secondary border border-background flex items-center justify-center text-[10px] font-bold text-muted-foreground" title="Playwright">P</div>
-                            )}
-                            {worksWith.some(w => w.includes('neon')) && (
-                                <div className="h-6 w-6 rounded-full bg-secondary border border-background flex items-center justify-center text-[10px] font-bold text-muted-foreground" title="Neon">N</div>
-                            )}
-                        </div>
-                    </div>
-
+                <CardHeader className="space-y-3 pb-4">
                     <CardTitle className="text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">
                         {prompt.title}
                     </CardTitle>
@@ -34,6 +31,17 @@ export function PromptCard({ prompt }: { prompt: Prompt }) {
                     <CardDescription className="text-muted-foreground font-medium leading-relaxed line-clamp-3">
                         {prompt.summary}
                     </CardDescription>
+
+                    <div className="flex flex-wrap gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                        <div className="flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5" />
+                            Updated {updatedLabel}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Globe className="h-3.5 w-3.5" />
+                            {targetsLabel}
+                        </div>
+                    </div>
 
                     <div className="mt-auto pt-4 flex flex-wrap gap-2 text-xs">
                         {prompt.tags.slice(0, 3).map((tag: string) => (

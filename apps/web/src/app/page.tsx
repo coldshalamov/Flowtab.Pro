@@ -3,7 +3,6 @@ import { PromptCard } from "@/components/PromptCard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import Image from "next/image";
 
 // Revalidate every hour
 export const revalidate = 3600;
@@ -31,8 +30,8 @@ export default async function Home() {
           </h1>
 
           <p className="max-w-xl mx-auto text-lg sm:text-xl text-muted-foreground/90 font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-            The definitive repository of browser automation recipes.
-            Optimized for Comet, Playwright, and Opera Neon.
+            A library of automation prompts and playbooks for web agents.
+            Prompt-first. Runner-agnostic.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
@@ -58,25 +57,17 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* Minimal Tech Stack */}
+        {/* Minimal Footnote */}
         <div className="mt-32 w-full animate-in fade-in duration-1000 delay-500">
           <div className="container max-w-5xl px-6 flex flex-col md:flex-row items-center justify-center gap-12 sm:gap-16 opacity-50 hover:opacity-100 transition-opacity duration-500">
-            <a href="https://checkcomet.com" target="_blank" rel="noopener noreferrer" className="group">
-              <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 transition-all">
-                <Image src="/images/logos/comet.svg" alt="Comet" width={24} height={24} />
-                <span className="font-semibold text-foreground/80">Comet</span>
-              </div>
-            </a>
             <a href="https://playwright.dev" target="_blank" rel="noopener noreferrer" className="group">
-              <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 transition-all">
-                <Image src="/images/logos/playwright.svg" alt="Playwright" width={24} height={24} />
+              <div className="flex items-center gap-3 group-hover:opacity-100 transition-all">
                 <span className="font-semibold text-foreground/80">Playwright</span>
               </div>
             </a>
-            <a href="https://www.opera.com/browsers/neon" target="_blank" rel="noopener noreferrer" className="group">
-              <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 transition-all">
-                <Image src="/images/logos/neon.svg" alt="Neon" width={24} height={24} />
-                <span className="font-semibold text-foreground/80">Neon</span>
+            <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" className="group">
+              <div className="flex items-center gap-3 group-hover:opacity-100 transition-all">
+                <span className="font-semibold text-foreground/80">MCP</span>
               </div>
             </a>
           </div>

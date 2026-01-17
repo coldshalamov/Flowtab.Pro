@@ -15,7 +15,7 @@ export function SiteFooter() {
                             </h3>
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed max-w-xs font-medium">
-                            The repository for high-precision browser automation.
+                            A prompt-first library for web automation playbooks.
                             Built for the next generation of web agents.
                         </p>
                     </div>
@@ -34,11 +34,6 @@ export function SiteFooter() {
                             <li>
                                 <Link href="/submit" className="hover:text-foreground transition-colors">
                                     Submit
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/library?difficulty=beginner" className="hover:text-foreground transition-colors">
-                                    Tutorials
                                 </Link>
                             </li>
                         </ul>

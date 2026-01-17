@@ -48,11 +48,6 @@ export async function fetchPrompts(params: Record<string, string | number | unde
             );
         }
 
-        if (params.worksWith && params.worksWith !== "all") {
-            const ww = String(params.worksWith);
-            filtered = filtered.filter(p => p.worksWith.includes(ww));
-        }
-
         if (params.tags) {
             const tags = String(params.tags).split(',').map(t => t.trim());
             if (tags.length > 0 && tags[0] !== "") {
@@ -93,7 +88,7 @@ export async function fetchTags(): Promise<string[]> {
     }
 }
 
-export async function submitPrompt(data: any): Promise<boolean> {
+export async function submitPrompt(data: unknown): Promise<boolean> {
     try {
         const res = await fetch(`/api/submit`, {
             method: 'POST',

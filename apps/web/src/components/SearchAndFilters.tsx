@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,27 +15,33 @@ export function SearchAndFilters({ availableTags }: { availableTags: string[] })
 
     // Local state
     const [q, setQ] = React.useState(searchParams.get("q") || "");
-    const [worksWith, setWorksWith] = React.useState(searchParams.get("worksWith") || "");
     const [selectedTags, setSelectedTags] = React.useState<string[]>(
         searchParams.get("tags") ? searchParams.get("tags")!.split(",") : []
     );
+
+    // Keep local state in sync with back/forward navigation.
+    React.useEffect(() => {
+        setQ(searchParams.get("q") || "");
+        setSelectedTags(searchParams.get("tags") ? searchParams.get("tags")!.split(",") : []);
+    }, [searchParams]);
 
     // Debounce search and sync logic
     React.useEffect(() => {
         const timer = setTimeout(() => {
             const params = new URLSearchParams();
-            if (q) params.set("q", q);
-            if (worksWith) params.set("worksWith", worksWith);
-            if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
+            const trimmedQ = q.trim();
+            if (trimmedQ) params.set("q", trimmedQ);
+            const tagsForUrl = [...selectedTags].sort();
+            if (tagsForUrl.length > 0) params.set("tags", tagsForUrl.join(","));
 
             const currentString = searchParams.toString();
             const newString = params.toString();
             if (currentString !== newString) {
-                router.push(`/library?${newString}`);
+                router.replace(newString ? `/library?${newString}` : "/library");
             }
-        }, 300);
+        }, 250);
         return () => clearTimeout(timer);
-    }, [q, worksWith, selectedTags, router, searchParams]);
+    }, [q, selectedTags, router, searchParams]);
 
 
     const toggleTag = (tag: string) => {
@@ -45,28 +50,38 @@ export function SearchAndFilters({ availableTags }: { availableTags: string[] })
         );
     };
 
+    const clearAll = () => {
+        setQ("");
+        setSelectedTags([]);
+        router.replace("/library");
+    };
+
     return (
         <div className="space-y-6">
-            <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search for prompts..."
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    className="pl-10 h-11 bg-background border-border focus:ring-1 focus:ring-primary/20 transition-all rounded-md"
-                />
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-8">
-                <div className="space-y-3 flex-1">
-                    <Label className="text-foreground text-xs uppercase tracking-widest font-bold opacity-60">System Context</Label>
-                    <ToggleGroup type="single" value={worksWith} onValueChange={(v) => setWorksWith(v || "")} className="justify-start gap-2">
-                        <ToggleGroupItem value="Comet" className="h-9 px-4 border border-border data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:border-foreground rounded-md text-xs font-semibold transition-all">Comet</ToggleGroupItem>
-                        <ToggleGroupItem value="Playwright MCP" className="h-9 px-4 border border-border data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:border-foreground rounded-md text-xs font-semibold transition-all">Playwright</ToggleGroupItem>
-                        <ToggleGroupItem value="Opera Neon" className="h-9 px-4 border border-border data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:border-foreground rounded-md text-xs font-semibold transition-all">Neon</ToggleGroupItem>
-                        <ToggleGroupItem value="Generic" className="h-9 px-4 border border-border data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:border-foreground rounded-md text-xs font-semibold transition-all">Generic</ToggleGroupItem>
-                    </ToggleGroup>
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search prompts…"
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Escape") clearAll();
+                        }}
+                        className="pl-10 h-11 bg-background border-border focus:ring-1 focus:ring-primary/20 transition-all rounded-md"
+                    />
                 </div>
+
+                {(q.trim().length > 0 || selectedTags.length > 0) && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={clearAll}
+                        className="h-11 px-4 text-xs uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground"
+                    >
+                        Clear <X className="ml-2 h-3.5 w-3.5" />
+                    </Button>
+                )}
             </div>
 
             <div className="space-y-3">
@@ -89,7 +104,7 @@ export function SearchAndFilters({ availableTags }: { availableTags: string[] })
                     ))}
                     {selectedTags.length > 0 && (
                         <Button variant="ghost" size="sm" onClick={() => setSelectedTags([])} className="h-7 px-3 text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-destructive">
-                            Clear Filters <X className="ml-1.5 h-3 w-3" />
+                            Clear Tags <X className="ml-1.5 h-3 w-3" />
                         </Button>
                     )}
                 </div>

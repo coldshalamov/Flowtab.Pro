@@ -7,20 +7,19 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "Archive // Flowtab.Pro",
-    description: "Browse the absolute collection of high-precision browser automation workflows.",
+    description: "Browse the archive of high-precision automation prompts and workflows.",
 };
 
 export default async function LibraryPage(props: {
-    searchParams: { [key: string]: string | string[] | undefined };
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }> | { [key: string]: string | string[] | undefined };
 }) {
-    const searchParams = props.searchParams;
+    const searchParams = await Promise.resolve(props.searchParams);
 
     const q = typeof searchParams.q === "string" ? searchParams.q : undefined;
-    const worksWith = typeof searchParams.worksWith === "string" ? searchParams.worksWith : undefined;
     const tags = typeof searchParams.tags === "string" ? searchParams.tags : undefined;
 
     const { items: prompts, total } = await fetchPrompts({
-        q, worksWith, tags,
+        q, tags,
         page: 1, pageSize: 20
     });
 

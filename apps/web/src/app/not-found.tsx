@@ -38,7 +38,7 @@ export default function NotFound() {
                         Popular prompts you might be interested in:
                     </p>
                     <div className="flex flex-wrap gap-2 justify-center">
-                        {["automation", "browser", "playwright", "comet", "testing"].map((tag) => (
+                        {["automation", "playwright", "agents", "testing", "research"].map((tag) => (
                             <Link key={tag} href={`/library?tags=${tag}`}>
                                 <span className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors cursor-pointer">
                                     #{tag}
