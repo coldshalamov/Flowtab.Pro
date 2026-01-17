@@ -1,4 +1,4 @@
-import { Prompt, PromptListResponse, TagsResponse } from "./apiTypes";
+export { type Prompt, type PromptListResponse, type TagsResponse } from "./apiTypes";
 import { MOCK_PROMPTS, MOCK_TAGS } from "./mockData";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
@@ -17,9 +17,8 @@ const readFetchInit: RequestInit & { next?: { revalidate?: number } } =
         ? { next: { revalidate: 60 } }
         : { cache: "no-store" };
 
-export async function fetchPrompts(params: Record<string, string | number | undefined>): Promise<PromptListResponse> {
+export async function fetchPrompts(params: Record<string, string | number | undefined>) {
     try {
-        // Attempt real API fetch
         const url = new URL(`${API_BASE}/v1/prompts`);
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== "") {
@@ -35,14 +34,11 @@ export async function fetchPrompts(params: Record<string, string | number | unde
         return await res.json();
     } catch (error) {
         console.warn("API unavailable or failed, falling back to mock data.", error);
-        await delay(600); // Simulate network latency
+        await delay(600);
 
         let filtered = [...MOCK_PROMPTS];
-
-        // Helper to normalize strings
         const lower = (s: string) => s.toLowerCase();
 
-        // 1. Text Search
         if (params.q) {
             const q = lower(String(params.q));
             filtered = filtered.filter(p =>
@@ -52,18 +48,11 @@ export async function fetchPrompts(params: Record<string, string | number | unde
             );
         }
 
-        // 2. Difficulty
-        if (params.difficulty && params.difficulty !== "all") {
-            filtered = filtered.filter(p => p.difficulty === params.difficulty);
-        }
-
-        // 3. Works With (partial match or exact)
         if (params.worksWith && params.worksWith !== "all") {
             const ww = String(params.worksWith);
             filtered = filtered.filter(p => p.worksWith.includes(ww));
         }
 
-        // 4. Tags (comma separated)
         if (params.tags) {
             const tags = String(params.tags).split(',').map(t => t.trim());
             if (tags.length > 0 && tags[0] !== "") {
@@ -80,7 +69,7 @@ export async function fetchPrompts(params: Record<string, string | number | unde
     }
 }
 
-export async function fetchPrompt(slug: string): Promise<Prompt | null> {
+export async function fetchPrompt(slug: string) {
     try {
         const res = await fetch(`${API_BASE}/v1/prompts/${slug}`, readFetchInit);
         if (!res.ok) throw new Error("Failed to fetch prompt");
@@ -96,7 +85,7 @@ export async function fetchTags(): Promise<string[]> {
     try {
         const res = await fetch(`${API_BASE}/v1/tags`, readFetchInit);
         if (!res.ok) throw new Error("Failed to fetch tags");
-        const data: TagsResponse = await res.json();
+        const data = await res.json();
         return data.items;
     } catch (error) {
         console.warn("API unavailable for tags, using mock.", error);
@@ -104,14 +93,8 @@ export async function fetchTags(): Promise<string[]> {
     }
 }
 
-export async function submitPrompt(data: Partial<Prompt>): Promise<boolean> {
-    // In production, we want to try the real API first
-    if (process.env.NODE_ENV === 'production' && API_BASE.includes('localhost')) {
-        console.warn("⚠️ API_BASE is still pointing to localhost in production!");
-    }
-
+export async function submitPrompt(data: any): Promise<boolean> {
     try {
-        // Submit via Next.js route handler so the admin key can stay server-side.
         const res = await fetch(`/api/submit`, {
             method: 'POST',
             headers: {

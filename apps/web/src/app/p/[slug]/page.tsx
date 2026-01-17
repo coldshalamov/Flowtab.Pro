@@ -1,125 +1,139 @@
 import Link from "next/link";
 import { fetchPrompt } from "@/lib/api";
 import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/CopyButton";
-import { Calendar, Layers, ArrowLeft } from "lucide-react";
+import { Calendar, Layers, ChevronLeft, Clock, Globe } from "lucide-react";
 import type { Metadata } from "next";
 
 export async function generateMetadata(props: {
     params: { slug: string };
 }): Promise<Metadata> {
     const prompt = await fetchPrompt(props.params.slug);
-
-    if (!prompt) {
-        return { title: "Prompt Not Found" };
-    }
-
-    return {
-        title: prompt.title,
-        description: prompt.summary,
-    };
+    if (!prompt) return { title: "Prompt Not Found" };
+    return { title: `${prompt.title} // Flowtab.Pro`, description: prompt.summary };
 }
 
 export default async function PromptDetailPage(props: { params: { slug: string } }) {
     const prompt = await fetchPrompt(props.params.slug);
-
-    if (!prompt) {
-        notFound();
-    }
+    if (!prompt) notFound();
 
     const jsonString = JSON.stringify(prompt, null, 2);
 
     return (
-        <div className="container py-12 max-w-4xl mx-auto px-4 min-h-screen">
-            {/* Header */}
-            <div className="space-y-6 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <Link href="/library" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mb-2">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Library
-                </Link>
-                <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className="capitalize px-3 py-1 text-sm">{prompt.difficulty}</Badge>
-                    {prompt.worksWith.map(w => (
-                        <Badge key={w} variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/10 px-3 py-1 text-sm">
-                            {w}
-                        </Badge>
-                    ))}
+        <div className="relative min-h-screen bg-background">
+            <div className="container relative z-10 py-16 md:py-24 max-w-5xl mx-auto px-6">
+                {/* Navigation */}
+                <div className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <Link href="/library" className="group inline-flex items-center text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
+                        <ChevronLeft className="mr-1.5 h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+                        Archives
+                    </Link>
                 </div>
 
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 pb-2">
-                    {prompt.title}
-                </h1>
-
-                <p className="text-xl text-muted-foreground max-w-2xl text-balance">
-                    {prompt.summary}
-                </p>
-
-                <div className="flex flex-wrap gap-4 items-center text-sm text-muted-foreground pt-2">
-                    <div className="flex items-center gap-1">
-                        <Layers className="h-4 w-4" />
-                        {prompt.tags.map(t => `#${t}`).join(", ")}
+                {/* Header Section */}
+                <div className="space-y-8 mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                    <div className="flex flex-wrap items-center gap-3">
+                        {prompt.worksWith.map(w => (
+                            <div key={w} className="px-3 py-1 bg-secondary border border-border text-[10px] font-bold uppercase tracking-widest text-foreground">
+                                {w}
+                            </div>
+                        ))}
                     </div>
-                    <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        Updated {new Date(prompt.updatedAt).toLocaleDateString()}
+
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground uppercase leading-[0.9]">
+                        {prompt.title}
+                    </h1>
+
+                    <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-3xl">
+                        {prompt.summary}
+                    </p>
+
+                    <div className="flex flex-wrap gap-8 items-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pt-6 border-t border-border">
+                        <div className="flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5" />
+                            Compiled // {new Date(prompt.updatedAt).toLocaleDateString()}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Globe className="h-3.5 w-3.5" />
+                            Target // {prompt.targetSites.join(", ") || "Agnostic"}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="grid gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
-                {/* Actions */}
-                <div className="flex gap-4 sticky top-20 z-10 bg-background/80 backdrop-blur-md p-4 rounded-xl border border-border/40 shadow-sm -mx-4 px-4 md:mx-0 md:px-4">
-                    <CopyButton text={prompt.promptText} label="Copy Prompt" variant="default" />
-                    <CopyButton text={jsonString} label="Copy JSON" variant="outline" />
-                </div>
+                <div className="grid gap-12 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
+                    {/* Actions Panel */}
+                    <div className="grid sm:grid-cols-2 gap-4 sticky top-20 z-20 bg-background/80 backdrop-blur-md p-4 -mx-4 rounded-lg border border-border/40 shadow-sm">
+                        <CopyButton
+                            text={prompt.promptText}
+                            label="Deploy Prompt"
+                            variant="default"
+                            className="h-12 bg-foreground text-background hover:bg-foreground/90 font-bold uppercase tracking-widest text-xs"
+                        />
+                        <CopyButton
+                            text={jsonString}
+                            label="Export Metadata"
+                            variant="outline"
+                            className="h-12 border-border font-bold uppercase tracking-widest text-xs"
+                        />
+                    </div>
 
-                {/* Content */}
-                <div className="grid gap-6">
-                    <Card className="border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden">
-                        <CardHeader className="bg-muted/30 border-b border-border/40">
-                            <CardTitle className="font-mono text-sm uppercase tracking-wider text-muted-foreground">Prompt Content</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <pre className="whitespace-pre-wrap break-words p-6 font-mono text-sm text-foreground/90 bg-muted/10 overflow-x-auto leading-relaxed">
-                                {prompt.promptText}
-                            </pre>
-                        </CardContent>
-                    </Card>
-
-                    {prompt.steps && prompt.steps.length > 0 && (
-                        <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    Steps
+                    <div className="grid gap-12">
+                        {/* Source Payload */}
+                        <Card className="rounded-lg border-border bg-card overflow-hidden">
+                            <CardHeader className="border-b border-border bg-muted/30 py-4">
+                                <CardTitle className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-3">
+                                    <Layers className="h-3.5 w-3.5" />
+                                    Source Payload
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <ol className="relative space-y-4 ml-2">
+                            <CardContent className="p-0">
+                                <pre className="whitespace-pre-wrap break-words p-8 font-mono text-sm text-foreground/80 overflow-x-auto leading-relaxed selection:bg-primary/20 bg-muted/10">
+                                    {prompt.promptText}
+                                </pre>
+                            </CardContent>
+                        </Card>
+
+                        <div className="grid lg:grid-cols-5 gap-12">
+                            {/* Execution Steps */}
+                            <div className="lg:col-span-3 space-y-8">
+                                <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground">Operational sequence</h3>
+                                <ol className="space-y-6">
                                     {prompt.steps.map((step, i) => (
-                                        <li key={i} className="pl-6 relative border-l-2 border-primary/20 hover:border-primary/50 transition-colors">
-                                            <span className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-background border-2 border-primary/50 text-[10px] flex items-center justify-center font-bold text-primary">
+                                        <li key={i} className="flex gap-6 group">
+                                            <span className="flex-shrink-0 w-8 h-8 rounded-md bg-secondary border border-border flex items-center justify-center font-bold text-xs text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-all">
                                                 {i + 1}
                                             </span>
-                                            <p className="text-foreground/90">{step}</p>
+                                            <p className="text-muted-foreground font-medium pt-1.5 leading-relaxed">{step}</p>
                                         </li>
                                     ))}
                                 </ol>
-                            </CardContent>
-                        </Card>
-                    )}
+                            </div>
 
-                    {prompt.notes && (
-                        <Card className="border-yellow-500/20 bg-yellow-500/5 dark:bg-yellow-500/10">
-                            <CardHeader>
-                                <CardTitle className="text-yellow-600 dark:text-yellow-400">Notes & Pitfalls</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground">{prompt.notes}</p>
-                            </CardContent>
-                        </Card>
-                    )}
+                            {/* Tags and Notes */}
+                            <div className="lg:col-span-2 space-y-12">
+                                <div className="space-y-6">
+                                    <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground">Cluster tags</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {prompt.tags.map((tag: string) => (
+                                            <div key={tag} className="px-3 py-1.5 rounded-md bg-secondary border border-border text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                                                #{tag}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {prompt.notes && (
+                                    <div className="space-y-6">
+                                        <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground">Operational Anomalies</h3>
+                                        <div className="p-6 rounded-lg border border-border bg-muted/20 italic text-muted-foreground font-medium text-sm leading-relaxed border-l-4 border-l-primary">
+                                            &quot;{prompt.notes}&quot;
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
