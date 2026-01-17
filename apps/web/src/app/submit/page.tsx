@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { toast } from "sonner";
 import { submitPrompt } from "@/lib/api";
-import Link from "next/link";
 
 export default function SubmitPage() {
     const [loading, setLoading] = useState(false);
@@ -37,12 +36,16 @@ export default function SubmitPage() {
         }
 
         try {
-            await submitPrompt({
+            const ok = await submitPrompt({
                 ...formData,
                 tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
                 targetSites: formData.targetSites.split(",").map(t => t.trim()).filter(Boolean),
                 steps: formData.steps.split("\n").filter(Boolean),
             });
+
+            if (!ok) {
+                throw new Error("Submit failed");
+            }
             toast.success("Thanks for your submission! It will be reviewed shortly.");
             setFormData({
                 title: "",

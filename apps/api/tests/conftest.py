@@ -15,6 +15,7 @@ os.environ.setdefault("ADMIN_KEY", "test-admin-key-change-me")
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, create_engine, SQLModel
+from sqlalchemy.pool import StaticPool
 
 from apps.api.db import init_db
 from apps.api.main import app
@@ -28,7 +29,12 @@ TEST_DATABASE_URL = "sqlite:///:memory:"
 @pytest.fixture(scope="function")
 def test_engine():
     """Create a test database engine."""
-    engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+    # For in-memory SQLite, StaticPool ensures all sessions share the same DB connection.
+    engine = create_engine(
+        TEST_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
     return engine
 
 

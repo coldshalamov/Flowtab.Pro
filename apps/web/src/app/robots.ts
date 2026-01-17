@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://flowtab.pro";
+const base = siteUrl.replace(/\/$/, "");
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: `${siteUrl.replace(/\\/$/, "")}/sitemap.xml`,
+    sitemap: `${base}/sitemap.xml`,
   };
 }

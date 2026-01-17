@@ -2,11 +2,18 @@ import { Prompt, PromptListResponse, TagsResponse } from "./apiTypes";
 import { MOCK_PROMPTS, MOCK_TAGS } from "./mockData";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const IS_PROD = process.env.NODE_ENV === "production";
+
+if (IS_PROD && (!process.env.NEXT_PUBLIC_API_BASE || API_BASE.includes("localhost"))) {
+    console.warn(
+        "[Flowtab] NEXT_PUBLIC_API_BASE is missing or points at localhost; production pages may render with mock data."
+    );
+}
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const readFetchInit: RequestInit & { next?: { revalidate?: number } } =
-    process.env.NODE_ENV === "production"
+    IS_PROD
         ? { next: { revalidate: 60 } }
         : { cache: "no-store" };
 

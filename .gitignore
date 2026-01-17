@@ -1,0 +1,26 @@
+# Root ignores (repo hygiene)
+**/node_modules/
+**/.next/
+**/out/
+**/build/
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.mypy_cache/
+**/venv/
+
+# Env / secrets
+**/.env
+**/.env.*
+
+# Local DB / artifacts
+*.db
+*.sqlite
+*.sqlite3
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log

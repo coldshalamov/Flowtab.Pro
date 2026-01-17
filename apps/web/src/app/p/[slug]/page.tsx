@@ -5,10 +5,25 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/CopyButton";
 import { Calendar, Layers, ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
 
-export default async function PromptDetailPage(props: { params: Promise<{ slug: string }> }) {
-    const params = await props.params;
-    const prompt = await fetchPrompt(params.slug);
+export async function generateMetadata(props: {
+    params: { slug: string };
+}): Promise<Metadata> {
+    const prompt = await fetchPrompt(props.params.slug);
+
+    if (!prompt) {
+        return { title: "Prompt Not Found" };
+    }
+
+    return {
+        title: prompt.title,
+        description: prompt.summary,
+    };
+}
+
+export default async function PromptDetailPage(props: { params: { slug: string } }) {
+    const prompt = await fetchPrompt(props.params.slug);
 
     if (!prompt) {
         notFound();

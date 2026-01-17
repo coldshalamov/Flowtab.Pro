@@ -29,7 +29,8 @@ We deploy the Next.js app to Vercel.
    - **Root Directory**: Click `Edit` and select `apps/web`.
    - **Environment Variables**:
      - `NEXT_PUBLIC_API_BASE`: Paste your Render API URL (e.g., `https://flowtab-api.onrender.com`).
-     - `NEXT_PUBLIC_ADMIN_KEY`: Copy the `ADMIN_KEY` from your Render Dashboard (Environment tab) if you want to enable submitting.
+     - `ADMIN_KEY`: Copy the `ADMIN_KEY` from your Render Dashboard (Environment tab) to enable submissions via the `/api/submit` route (server-side only).
+     - `NEXT_PUBLIC_SITE_URL` (optional): Set to `https://flowtab.pro` so `robots.txt` and `sitemap.xml` use the correct canonical domain.
 
 5. Click **Deploy**.
 

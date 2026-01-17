@@ -20,6 +20,7 @@ export default async function Home() {
             fill
             className="object-cover"
             priority
+            sizes="100vw"
           />
         </div>
 
@@ -55,6 +56,7 @@ export default async function Home() {
                     alt=""
                     fill
                     className="object-cover mix-blend-overlay"
+                    sizes="320px"
                   />
                 </div>
                 <span className="relative z-10 flex items-center">
@@ -74,30 +76,30 @@ export default async function Home() {
               Works perfectly with
             </p>
             <div className="flex flex-wrap justify-center gap-8 md:gap-12 items-center opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
-              <Link href="https://checkcomet.com" target="_blank" className="hover:opacity-100 transition-opacity">
+              <a href="https://checkcomet.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">
                 <div className="flex items-center gap-2">
                   <Image src="/images/logos/comet.svg" alt="Comet" width={32} height={32} />
                   <span className="font-semibold text-lg">Comet</span>
                 </div>
-              </Link>
-              <Link href="https://www.opera.com/browsers/neon" target="_blank" className="hover:opacity-100 transition-opacity">
+              </a>
+              <a href="https://www.opera.com/browsers/neon" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">
                 <div className="flex items-center gap-2">
                   <Image src="/images/logos/neon.svg" alt="Opera Neon" width={32} height={32} />
                   <span className="font-semibold text-lg">Neon</span>
                 </div>
-              </Link>
-              <Link href="https://playwright.dev" target="_blank" className="hover:opacity-100 transition-opacity">
+              </a>
+              <a href="https://playwright.dev" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">
                 <div className="flex items-center gap-2">
                   <Image src="/images/logos/playwright.svg" alt="Playwright" width={32} height={32} />
                   <span className="font-semibold text-lg">Playwright</span>
                 </div>
-              </Link>
-              <Link href="#" className="hover:opacity-100 transition-opacity">
+              </a>
+              <a href="#" className="hover:opacity-100 transition-opacity">
                 <div className="flex items-center gap-2">
                   <Image src="/images/logos/manus.svg" alt="Manus" width={32} height={32} />
                   <span className="font-semibold text-lg">Manus</span>
                 </div>
-              </Link>
+              </a>
             </div>
           </div>
         </div>

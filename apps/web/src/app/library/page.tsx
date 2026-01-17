@@ -4,17 +4,17 @@ import { PromptCard } from "@/components/PromptCard";
 import { SearchAndFilters } from "@/components/SearchAndFilters";
 import { SearchFiltersSkeleton } from "@/components/SearchFiltersSkeleton";
 import type { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
     title: "Library - Flowtab.Pro",
     description: "Browse our collection of automated browser prompt recipes for Comet, Playwright, and Opera Neon.",
 };
-import Image from "next/image";
 
 export default async function LibraryPage(props: {
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+    searchParams: { [key: string]: string | string[] | undefined };
 }) {
-    const searchParams = await props.searchParams;
+    const searchParams = props.searchParams;
 
     const q = typeof searchParams.q === "string" ? searchParams.q : undefined;
     const difficulty = typeof searchParams.difficulty === "string" ? searchParams.difficulty : undefined;
@@ -35,7 +35,7 @@ export default async function LibraryPage(props: {
                     Prompt Library
                 </h1>
                 <p className="text-sm md:text-base text-muted-foreground">
-                    Browse our collection of {total > 0 ? total : ''} automated browser workflows.
+                    Browse our collection of {total} automated browser workflows.
                 </p>
             </div>
 
