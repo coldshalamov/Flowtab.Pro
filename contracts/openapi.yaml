@@ -1,0 +1,529 @@
+openapi: 3.0.1
+info:
+  title: Flowtab.Pro API
+  description: |
+    API for Flowtab.Pro - a library of automated browser prompt recipes.
+    
+    This API provides access to a collection of prompts designed for browser automation,
+    including filtering, searching, and retrieval capabilities.
+  version: 1.0.0
+  contact:
+    name: Flowtab.Pro
+    url: https://flowtab.pro
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.flowtab.pro
+    description: Production server
+
+tags:
+  - name: prompts
+    description: Prompt management and retrieval
+  - name: tags
+    description: Tag management
+
+paths:
+  /v1/prompts:
+    get:
+      tags:
+        - prompts
+      summary: List prompts
+      description: Retrieve a paginated list of prompts with optional filtering
+      operationId: listPrompts
+      parameters:
+        - name: q
+          in: query
+          description: Search query to filter prompts by title, summary, or content
+          schema:
+            type: string
+          example: "browser automation"
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          schema:
+            type: string
+          example: "automation,browser"
+        - name: difficulty
+          in: query
+          description: Filter by difficulty level
+          schema:
+            type: string
+            enum: [beginner, intermediate, advanced]
+          example: "intermediate"
+        - name: worksWith
+          in: query
+          description: Filter by compatible tools (comma-separated)
+          schema:
+            type: string
+          example: "Chrome,Firefox"
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          example: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          example: 20
+      responses:
+        '200':
+          description: Successful response with paginated prompts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromptListResponse'
+              examples:
+                success:
+                  summary: Successful response
+                  value:
+                    items:
+                      - id: "550e8400-e29b-41d4-a716-446655440000"
+                        slug: "browser-automation-basics"
+                        title: "Browser Automation Basics"
+                        summary: "Learn the fundamentals of automating browser tasks"
+                        difficulty: "beginner"
+                        worksWith: ["Chrome", "Firefox", "Edge"]
+                        tags: ["automation", "browser", "tutorial"]
+                        targetSites: ["example.com", "test.com"]
+                        promptText: "Create a script to automate browser navigation..."
+                        steps: ["Open browser", "Navigate to URL", "Perform action"]
+                        notes: "Requires basic JavaScript knowledge"
+                        createdAt: "2024-01-15T10:30:00Z"
+                        updatedAt: "2024-01-15T10:30:00Z"
+                    page: 1
+                    pageSize: 20
+                    total: 1
+        '400':
+          description: Bad request - invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid page parameter"
+                message: "page must be a positive integer"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Internal server error"
+                message: "An unexpected error occurred"
+
+    post:
+      tags:
+        - prompts
+      summary: Create a new prompt
+      description: Create a new prompt (requires admin authentication)
+      operationId: createPrompt
+      security:
+        - AdminKey: []
+      requestBody:
+        description: Prompt data to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptCreate'
+            examples:
+              fullPrompt:
+                summary: Complete prompt creation
+                value:
+                  slug: "browser-automation-basics"
+                  title: "Browser Automation Basics"
+                  summary: "Learn the fundamentals of automating browser tasks"
+                  difficulty: "beginner"
+                  worksWith: ["Chrome", "Firefox", "Edge"]
+                  tags: ["automation", "browser", "tutorial"]
+                  targetSites: ["example.com", "test.com"]
+                  promptText: "Create a script to automate browser navigation..."
+                  steps: ["Open browser", "Navigate to URL", "Perform action"]
+                  notes: "Requires basic JavaScript knowledge"
+              minimalPrompt:
+                summary: Minimal prompt creation (slug auto-generated)
+                value:
+                  title: "Quick Browser Script"
+                  summary: "A simple browser automation script"
+                  difficulty: "beginner"
+                  worksWith: ["Chrome"]
+                  tags: ["automation"]
+                  targetSites: []
+                  promptText: "Automate a simple task"
+                  steps: ["Step 1", "Step 2"]
+                  notes: ""
+      responses:
+        '201':
+          description: Prompt created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prompt'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                slug: "browser-automation-basics"
+                title: "Browser Automation Basics"
+                summary: "Learn the fundamentals of automating browser tasks"
+                difficulty: "beginner"
+                worksWith: ["Chrome", "Firefox", "Edge"]
+                tags: ["automation", "browser", "tutorial"]
+                targetSites: ["example.com", "test.com"]
+                promptText: "Create a script to automate browser navigation..."
+                steps: ["Open browser", "Navigate to URL", "Perform action"]
+                notes: "Requires basic JavaScript knowledge"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T10:30:00Z"
+        '401':
+          description: Unauthorized - invalid or missing admin key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Unauthorized"
+                message: "Invalid or missing X-Admin-Key header"
+        '422':
+          description: Validation error - invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                error: "Validation error"
+                message: "Request body validation failed"
+                details:
+                  - field: "difficulty"
+                    message: "must be one of: beginner, intermediate, advanced"
+                  - field: "title"
+                    message: "is required"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/prompts/{slug}:
+    get:
+      tags:
+        - prompts
+      summary: Get prompt by slug
+      description: Retrieve a single prompt by its unique slug
+      operationId: getPromptBySlug
+      parameters:
+        - name: slug
+          in: path
+          description: The unique slug of the prompt
+          required: true
+          schema:
+            type: string
+          example: "browser-automation-basics"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prompt'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                slug: "browser-automation-basics"
+                title: "Browser Automation Basics"
+                summary: "Learn the fundamentals of automating browser tasks"
+                difficulty: "beginner"
+                worksWith: ["Chrome", "Firefox", "Edge"]
+                tags: ["automation", "browser", "tutorial"]
+                targetSites: ["example.com", "test.com"]
+                promptText: "Create a script to automate browser navigation..."
+                steps: ["Open browser", "Navigate to URL", "Perform action"]
+                notes: "Requires basic JavaScript knowledge"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T10:30:00Z"
+        '404':
+          description: Prompt not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Not found"
+                message: "Prompt with slug 'browser-automation-basics' not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/tags:
+    get:
+      tags:
+        - tags
+      summary: List all tags
+      description: Retrieve a list of all available tags
+      operationId: listTags
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagListResponse'
+              example:
+                items: ["automation", "browser", "tutorial", "advanced", "scraping", "testing"]
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    AdminKey:
+      type: apiKey
+      in: header
+      name: X-Admin-Key
+      description: Admin API key for protected endpoints
+
+  schemas:
+    Prompt:
+      type: object
+      required:
+        - id
+        - slug
+        - title
+        - summary
+        - difficulty
+        - worksWith
+        - tags
+        - targetSites
+        - promptText
+        - steps
+        - notes
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the prompt
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        slug:
+          type: string
+          description: URL-friendly unique identifier
+          example: "browser-automation-basics"
+        title:
+          type: string
+          description: Human-readable title of the prompt
+          example: "Browser Automation Basics"
+        summary:
+          type: string
+          description: Brief description of what the prompt does
+          example: "Learn the fundamentals of automating browser tasks"
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          description: Difficulty level of the prompt
+          example: "beginner"
+        worksWith:
+          type: array
+          description: List of compatible tools/browsers
+          items:
+            type: string
+          example: ["Chrome", "Firefox", "Edge"]
+        tags:
+          type: array
+          description: List of tags for categorization
+          items:
+            type: string
+          example: ["automation", "browser", "tutorial"]
+        targetSites:
+          type: array
+          description: List of target websites this prompt works with
+          items:
+            type: string
+          example: ["example.com", "test.com"]
+        promptText:
+          type: string
+          description: The actual prompt text to be used
+          example: "Create a script to automate browser navigation..."
+        steps:
+          type: array
+          description: Step-by-step instructions
+          items:
+            type: string
+          example: ["Open browser", "Navigate to URL", "Perform action"]
+        notes:
+          type: string
+          description: Additional notes or warnings
+          example: "Requires basic JavaScript knowledge"
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the prompt was created
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the prompt was last updated
+          example: "2024-01-15T10:30:00Z"
+
+    PromptCreate:
+      type: object
+      required:
+        - title
+        - summary
+        - difficulty
+        - worksWith
+        - tags
+        - targetSites
+        - promptText
+        - steps
+        - notes
+      properties:
+        slug:
+          type: string
+          description: URL-friendly unique identifier (optional, auto-generated from title if not provided)
+          example: "browser-automation-basics"
+        title:
+          type: string
+          description: Human-readable title of the prompt
+          example: "Browser Automation Basics"
+        summary:
+          type: string
+          description: Brief description of what the prompt does
+          example: "Learn the fundamentals of automating browser tasks"
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          description: Difficulty level of the prompt
+          example: "beginner"
+        worksWith:
+          type: array
+          description: List of compatible tools/browsers
+          items:
+            type: string
+          example: ["Chrome", "Firefox", "Edge"]
+        tags:
+          type: array
+          description: List of tags for categorization
+          items:
+            type: string
+          example: ["automation", "browser", "tutorial"]
+        targetSites:
+          type: array
+          description: List of target websites this prompt works with
+          items:
+            type: string
+          example: ["example.com", "test.com"]
+        promptText:
+          type: string
+          description: The actual prompt text to be used
+          example: "Create a script to automate browser navigation..."
+        steps:
+          type: array
+          description: Step-by-step instructions
+          items:
+            type: string
+          example: ["Open browser", "Navigate to URL", "Perform action"]
+        notes:
+          type: string
+          description: Additional notes or warnings
+          example: "Requires basic JavaScript knowledge"
+
+    PromptListResponse:
+      type: object
+      required:
+        - items
+        - page
+        - pageSize
+        - total
+      properties:
+        items:
+          type: array
+          description: List of prompts
+          items:
+            $ref: '#/components/schemas/Prompt'
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        pageSize:
+          type: integer
+          description: Number of items per page
+          example: 20
+        total:
+          type: integer
+          description: Total number of prompts matching the query
+          example: 42
+
+    TagListResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          description: List of all available tags
+          items:
+            type: string
+          example: ["automation", "browser", "tutorial", "advanced", "scraping", "testing"]
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error type or category
+          example: "Not found"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Prompt with slug 'browser-automation-basics' not found"
+
+    ValidationError:
+      type: object
+      required:
+        - error
+        - message
+        - details
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "Validation error"
+        message:
+          type: string
+          description: General error message
+          example: "Request body validation failed"
+        details:
+          type: array
+          description: List of validation errors
+          items:
+            type: object
+            required:
+              - field
+              - message
+            properties:
+              field:
+                type: string
+                description: Field that failed validation
+                example: "difficulty"
+              message:
+                type: string
+                description: Specific validation error message
+                example: "must be one of: beginner, intermediate, advanced"

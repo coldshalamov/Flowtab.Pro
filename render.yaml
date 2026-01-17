@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: flowtab-api
+    env: python
+    buildCommand: chmod +x render_build.sh && ./render_build.sh
+    startCommand: uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: flowtab-db
+          property: connectionString
+      - key: ADMIN_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+        value: https://flowtab.pro,https://www.flowtab.pro,http://localhost:3000
+
+databases:
+  - name: flowtab-db
+    databaseName: flowtab
+    user: flowtab_user
+    plan: free
