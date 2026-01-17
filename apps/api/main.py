@@ -1,4 +1,5 @@
 import os
+
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +8,7 @@ from fastapi.responses import JSONResponse
 from apps.api.settings import settings
 from apps.api.db import init_db
 from apps.api.router import router
-from apps.api.utils import validation_error_response, format_pydantic_validation_error
+from apps.api.utils import validation_error_response
 
 app = FastAPI(
     title="Flowtab.Pro API",
@@ -19,7 +20,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
+    # We don't use cookies/sessions today; keeping this False reduces CSRF risk surface.
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

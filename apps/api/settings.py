@@ -1,4 +1,5 @@
 from typing import List
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,7 +12,9 @@ class Settings(BaseSettings):
     )
 
     database_url: str = "postgresql://user:password@localhost:5432/flowtab"
-    admin_key: str = "your-secret-admin-key-here"
+    # Required for admin operations like POST /v1/prompts.
+    # Render blueprint generates this automatically; local dev should set it in apps/api/.env.
+    admin_key: str
     cors_origins: str = "http://localhost:3000,http://localhost:8000"
 
     @property

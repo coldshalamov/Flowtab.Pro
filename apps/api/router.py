@@ -4,6 +4,7 @@ API router for the Flowtab.Pro backend API.
 This module defines all API endpoints for the prompts API.
 """
 
+import logging
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Header, status
@@ -31,6 +32,7 @@ from apps.api.utils import (
     format_pydantic_validation_error,
 )
 
+logger = logging.getLogger(__name__)
 
 # Create API router with prefix and tags
 router = APIRouter(prefix="/v1", tags=["prompts"])
@@ -88,10 +90,11 @@ def list_prompts(
             total=total,
         )
 
-    except Exception as e:
+    except Exception:
+        logger.exception("Unhandled error in GET /v1/prompts")
         return error_response(
             error="Internal server error",
-            message=f"An unexpected error occurred: {str(e)}",
+            message="An unexpected error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -118,10 +121,11 @@ def get_prompt(slug: str, session: Session = Depends(get_session)) -> PromptRead
 
         return prompt
 
-    except Exception as e:
+    except Exception:
+        logger.exception("Unhandled error in GET /v1/prompts/{slug} (slug=%s)", slug)
         return error_response(
             error="Internal server error",
-            message=f"An unexpected error occurred: {str(e)}",
+            message="An unexpected error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -137,10 +141,11 @@ def list_tags(session: Session = Depends(get_session)) -> TagsResponse | JSONRes
         tags = get_all_tags(session=session)
         return TagsResponse(items=tags)
 
-    except Exception as e:
+    except Exception:
+        logger.exception("Unhandled error in GET /v1/tags")
         return error_response(
             error="Internal server error",
-            message=f"An unexpected error occurred: {str(e)}",
+            message="An unexpected error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -159,6 +164,13 @@ def create_new_prompt(
 
     Admin authentication is required via the X-Admin-Key header.
     """
+    if not settings.admin_key:
+        return error_response(
+            error="Service unavailable",
+            message="Admin submissions are disabled (missing ADMIN_KEY).",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
     # Verify admin key
     if x_admin_key != settings.admin_key:
         return error_response(
@@ -176,9 +188,10 @@ def create_new_prompt(
             message="Request body validation failed",
             details=format_pydantic_validation_error(e),
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Unhandled error in POST /v1/prompts")
         return error_response(
             error="Internal server error",
-            message=f"An unexpected error occurred: {str(e)}",
+            message="An unexpected error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )

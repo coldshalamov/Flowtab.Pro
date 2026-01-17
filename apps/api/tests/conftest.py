@@ -8,6 +8,10 @@ including test database setup, test client, and test data seeding.
 import os
 from typing import Generator
 
+# Set env vars before importing app/settings (they are instantiated at import time).
+os.environ["TESTING"] = "true"
+os.environ.setdefault("ADMIN_KEY", "test-admin-key-change-me")
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, create_engine, SQLModel
@@ -16,9 +20,6 @@ from apps.api.db import init_db
 from apps.api.main import app
 from apps.api.models import Prompt
 from apps.api.settings import Settings
-
-# Set TESTING environment variable before importing the app
-os.environ["TESTING"] = "true"
 
 # Use in-memory SQLite for tests
 TEST_DATABASE_URL = "sqlite:///:memory:"
