@@ -3,8 +3,10 @@ import { fetchPrompt } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/CopyButton";
+import { AdminControls } from "@/components/AdminControls";
 import { Layers, ChevronLeft, Clock, Globe } from "lucide-react";
 import type { Metadata } from "next";
+
 
 export async function generateMetadata(props: {
     params: Promise<{ slug: string }> | { slug: string };
@@ -70,9 +72,11 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                             variant="outline"
                             className="h-12 border-border font-bold uppercase tracking-widest text-xs"
                         />
+                        <AdminControls slug={prompt.slug} />
                     </div>
 
                     <div className="grid gap-12">
+
                         {/* Source Payload */}
                         <Card className="rounded-lg border-border bg-card overflow-hidden">
                             <CardHeader className="border-b border-border bg-muted/30 py-4">

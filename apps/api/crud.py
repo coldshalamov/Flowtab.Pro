@@ -13,8 +13,34 @@ from sqlmodel import Session, select
 from sqlalchemy import String, func, or_
 from sqlalchemy.sql.expression import cast
 
-from apps.api.models import Prompt
-from apps.api.schemas import PromptCreate
+from apps.api.models import Prompt, User
+from apps.api.schemas import PromptCreate, UserCreate
+
+
+def get_user_by_email(session: Session, email: str) -> User | None:
+    """
+    Get a user by email.
+    """
+    statement = select(User).where(User.email == email)
+    return session.exec(statement).first()
+
+
+def create_user(
+    session: Session, user_create: UserCreate, hashed_password: str
+) -> User:
+    """
+    Create a new user.
+    """
+    user = User(
+        email=user_create.email,
+        hashed_password=hashed_password,
+        is_active=True,
+        is_superuser=False,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
 
 
 def get_prompt_by_slug(session: Session, slug: str) -> Prompt | None:
@@ -83,9 +109,7 @@ def get_prompts(
             # Escape quotes in the tag value
             escaped_tag = tag.replace('"', '""')
             pattern = '%"' + escaped_tag + '"%'
-            statement = statement.where(
-                cast(Prompt.tags, type_=String).like(pattern)
-            )
+            statement = statement.where(cast(Prompt.tags, type_=String).like(pattern))
 
     # Apply worksWith filter (OR logic - prompts must contain ANY specified tool)
     if worksWith:
@@ -186,16 +210,16 @@ def slugify_title(title: str) -> str:
     slug = title.lower()
 
     # Replace spaces and underscores with hyphens
-    slug = re.sub(r'[\s_]+', '-', slug)
+    slug = re.sub(r"[\s_]+", "-", slug)
 
     # Remove special characters except hyphens and alphanumeric
-    slug = re.sub(r'[^a-z0-9-]', '', slug)
+    slug = re.sub(r"[^a-z0-9-]", "", slug)
 
     # Remove consecutive hyphens
-    slug = re.sub(r'-+', '-', slug)
+    slug = re.sub(r"-+", "-", slug)
 
     # Remove leading/trailing hyphens
-    slug = slug.strip('-')
+    slug = slug.strip("-")
 
     return slug
 
@@ -247,3 +271,15 @@ def create_prompt(session: Session, prompt_create: PromptCreate) -> Prompt:
     session.refresh(prompt)
 
     return prompt
+
+
+def delete_prompt(session: Session, prompt: Prompt) -> None:
+    """
+    Delete a prompt from the database.
+
+    Args:
+        session: SQLAlchemy database session
+        prompt: The prompt object to delete
+    """
+    session.delete(prompt)
+    session.commit()

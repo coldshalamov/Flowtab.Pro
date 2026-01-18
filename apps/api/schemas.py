@@ -193,3 +193,30 @@ class ValidationError(ErrorResponse):
         default_factory=list,
         description="List of validation errors",
     )
+
+
+class UserBase(BaseModel):
+    email: str = Field(description="User email address")
+
+
+class UserCreate(UserBase):
+    password: str = Field(description="User password", min_length=8)
+
+
+class UserRead(UserBase):
+    id: str
+    is_active: bool
+    is_superuser: bool
+    createdAt: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    email: str | None = None

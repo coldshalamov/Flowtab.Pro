@@ -12,7 +12,7 @@ import os
 # Add the parent directory to sys.path to import modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from models import Prompt
+from models import Prompt, User
 from settings import settings
 
 # this is the Alembic Config object, which provides
@@ -77,9 +77,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

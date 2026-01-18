@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthProvider } from "@/components/AuthProvider";
 import { Geist, Geist_Mono } from "next/font/google";
 
 const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
@@ -46,10 +47,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen bg-background text-foreground flex flex-col`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <SiteHeader />
-          <main className="flex-1 w-full">{children}</main>
-          <SiteFooter />
-          <Toaster />
+          <AuthProvider>
+            <SiteHeader />
+            <main className="flex-1 w-full">{children}</main>
+            <SiteFooter />
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

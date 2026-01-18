@@ -7,21 +7,7 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ??
   "http://localhost:8000";
 
-const ADMIN_KEY = process.env.ADMIN_KEY;
-const IS_PROD = process.env.NODE_ENV === "production";
-
 export async function POST(req: Request) {
-  if (!ADMIN_KEY) {
-    if (IS_PROD) {
-      return NextResponse.json(
-        { error: "Service unavailable", message: "Missing ADMIN_KEY" },
-        { status: 503 }
-      );
-    }
-
-    return NextResponse.json({ ok: true, mocked: true }, { status: 200 });
-  }
-
   let body: unknown;
   try {
     body = await req.json();
@@ -36,7 +22,6 @@ export async function POST(req: Request) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Admin-Key": ADMIN_KEY,
       Accept: "application/json",
     },
     body: JSON.stringify(body),

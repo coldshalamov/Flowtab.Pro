@@ -20,8 +20,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
-    # We don't use cookies/sessions today; keeping this False reduces CSRF risk surface.
-    allow_credentials=False,
+    # Allow credentials for Authorization headers
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

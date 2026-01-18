@@ -3,7 +3,7 @@ from typing import Generator
 
 from sqlmodel import SQLModel, Session, create_engine
 
-from apps.api.models import Prompt
+from apps.api.models import Prompt, User
 from apps.api.settings import settings
 
 # Use test database URL if TESTING environment variable is set
@@ -21,10 +21,12 @@ else:
 # Allow overriding the engine for testing
 _test_engine = None
 
+
 def set_test_engine(test_engine):
     """Set the test engine for testing."""
     global _test_engine
     _test_engine = test_engine
+
 
 def get_engine():
     """Get the current engine (test engine if set, otherwise default engine)."""

@@ -1,4 +1,4 @@
-export { type Prompt, type PromptListResponse, type TagsResponse } from "./apiTypes";
+import { type Prompt, type PromptListResponse, type TagsResponse, type User, type AuthResponse } from "./apiTypes";
 import { MOCK_PROMPTS, MOCK_TAGS } from "./mockData";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
@@ -17,6 +17,14 @@ const readFetchInit: RequestInit & { next?: { revalidate?: number } } =
         ? { next: { revalidate: 60 } }
         : { cache: "no-store" };
 
+// Helper to get token from localStorage (client-side only)
+const getToken = () => {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem('token');
+    }
+    return null;
+};
+
 export async function fetchPrompts(params: Record<string, string | number | undefined>) {
     try {
         const url = new URL(`${API_BASE}/v1/prompts`);
@@ -31,22 +39,29 @@ export async function fetchPrompts(params: Record<string, string | number | unde
             headers: { "Accept": "application/json" }
         });
         if (!res.ok) throw new Error(`API returned ${res.status}`);
-        return await res.json();
+    return await res.json();
+}
+
+export async function deletePrompt(slug: string): Promise<boolean> {
+    try {
+        const token = getToken();
+        if (!token) return false;
+
+        const res = await fetch(`${API_BASE}/v1/prompts/${slug}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) return false;
+        return true;
     } catch (error) {
-        console.warn("API unavailable or failed, falling back to mock data.", error);
-        await delay(600);
+        console.error("Delete failed", error);
+        return false;
+    }
+}
 
-        let filtered = [...MOCK_PROMPTS];
-        const lower = (s: string) => s.toLowerCase();
-
-        if (params.q) {
-            const q = lower(String(params.q));
-            filtered = filtered.filter(p =>
-                lower(p.title).includes(q) ||
-                lower(p.summary).includes(q) ||
-                lower(p.promptText).includes(q)
-            );
-        }
 
         if (params.tags) {
             const tags = String(params.tags).split(',').map(t => t.trim());
@@ -90,11 +105,17 @@ export async function fetchTags(): Promise<string[]> {
 
 export async function submitPrompt(data: unknown): Promise<boolean> {
     try {
-        const res = await fetch(`/api/submit`, {
+        const token = getToken();
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_BASE}/v1/prompts`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers,
             body: JSON.stringify(data)
         });
 
@@ -109,3 +130,56 @@ export async function submitPrompt(data: unknown): Promise<boolean> {
         return false;
     }
 }
+
+// Auth API
+export async function login(email: string, password: string): Promise<AuthResponse> {
+    const formData = new URLSearchParams();
+    formData.append('username', email);
+    formData.append('password', password);
+
+    const res = await fetch(`${API_BASE}/v1/auth/token`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData,
+    });
+
+    if (!res.ok) {
+        throw new Error('Login failed');
+    }
+
+    return await res.json();
+}
+
+export async function register(email: string, password: string): Promise<User> {
+    const res = await fetch(`${API_BASE}/v1/auth/register`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Registration failed');
+    }
+
+    return await res.json();
+}
+
+export async function getMe(token: string): Promise<User> {
+    const res = await fetch(`${API_BASE}/v1/users/me`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+
+    if (!res.ok) {
+        throw new Error('Failed to fetch user');
+    }
+
+    return await res.json();
+}
+

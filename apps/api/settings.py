@@ -5,22 +5,30 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=("apps/api/.env", ".env"), 
+        env_file=("apps/api/.env", ".env"),
         env_file_encoding="utf-8",
         case_sensitive=False,
-        extra="ignore"
+        extra="ignore",
     )
 
     database_url: str = "postgresql://user:password@localhost:5432/flowtab"
     # Required for admin operations like POST /v1/prompts.
     # Render blueprint generates this automatically; local dev should set it in apps/api/.env.
-    admin_key: str
+    admin_key: str | None = None
+
+    # Auth settings
+    secret_key: str = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"  # Change in production!
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+
     cors_origins: str = "http://localhost:3000,http://localhost:8000"
 
     @property
     def cors_origins_list(self) -> List[str]:
         """Parse CORS_ORIGINS string into a list of origins."""
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        return [
+            origin.strip() for origin in self.cors_origins.split(",") if origin.strip()
+        ]
 
 
 settings = Settings()

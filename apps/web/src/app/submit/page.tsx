@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,8 +9,12 @@ import { toast } from "sonner";
 import { submitPrompt } from "@/lib/api";
 import { ChevronLeft, Share2 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/components/AuthProvider";
+import { useRouter } from "next/navigation";
 
 export default function SubmitPage() {
+    const { user, isLoading } = useAuth();
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         title: "",
@@ -22,7 +26,19 @@ export default function SubmitPage() {
         notes: ""
     });
 
+    useEffect(() => {
+        if (!isLoading && !user) {
+            toast.error("You must be logged in to submit a prompt");
+            router.push("/login");
+        }
+    }, [user, isLoading, router]);
+
+    if (isLoading || !user) {
+        return null; // Or a loading spinner
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
+
         e.preventDefault();
         setLoading(true);
 
