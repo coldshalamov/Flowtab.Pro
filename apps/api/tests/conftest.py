@@ -6,6 +6,7 @@ including test database setup, test client, and test data seeding.
 """
 
 import os
+import uuid
 from typing import Generator
 
 # Set env vars before importing app/settings (they are instantiated at import time).
@@ -42,19 +43,20 @@ def test_engine():
 def db_session(test_engine):
     """
     Create a test database session.
-    
+
     Creates tables before each test and drops them after.
     """
     # Set the test engine in db.py
     from apps.api.db import set_test_engine
+
     set_test_engine(test_engine)
-    
+
     # Create all tables
     SQLModel.metadata.create_all(test_engine)
-    
+
     # Create session (not using context manager so it stays open for client fixture)
     session = Session(test_engine)
-    
+
     try:
         yield session
     finally:
@@ -69,21 +71,21 @@ def db_session(test_engine):
 def client(db_session):
     """
     Create a test client with database session override.
-    
+
     Overrides the get_session dependency to use the test database.
     Uses the same session as db_session fixture.
     """
     from apps.api.db import get_session
-    
+
     def override_get_session():
         yield db_session
-    
+
     app.dependency_overrides[get_session] = override_get_session
-    
+
     # Don't use context manager to keep session open
     test_client = TestClient(app)
     yield test_client
-    
+
     # Clean up overrides
     app.dependency_overrides.clear()
 
@@ -92,7 +94,7 @@ def client(db_session):
 def sample_prompt_data():
     """
     Provide sample prompt data for testing.
-    
+
     Returns a dictionary with all required fields for creating a prompt.
     """
     return {
@@ -113,7 +115,7 @@ def sample_prompt_data():
 def seeded_prompts(db_session):
     """
     Seed the database with test prompts.
-    
+
     Creates 25 prompts with varying properties for testing pagination,
     filtering, and search functionality.
     """
@@ -126,7 +128,7 @@ def seeded_prompts(db_session):
         ["deployment", "ci-cd"],
         ["git", "automation"],
     ]
-    
+
     for i in range(25):
         prompt = Prompt(
             slug=f"test-prompt-{i}",
@@ -142,21 +144,54 @@ def seeded_prompts(db_session):
         )
         db_session.add(prompt)
         prompts.append(prompt)
-    
+
     db_session.commit()
-    
+
     # Refresh all prompts to get their IDs
     for prompt in prompts:
         db_session.refresh(prompt)
-    
+
     return prompts
 
 
 @pytest.fixture(scope="function")
 def admin_key():
-    """
-    Provide a valid admin key for testing.
-    
-    Returns the admin key from settings.
-    """
+    """Provide a valid admin key for testing."""
     return Settings().admin_key
+
+
+@pytest.fixture(scope="function")
+def user_credentials():
+    """Generate unique user credentials for each test."""
+    return {
+        "email": f"user-{uuid.uuid4()}@example.com",
+        "password": "test-password-123",
+    }
+
+
+@pytest.fixture(scope="function")
+def registered_user(client, user_credentials):
+    """Register a user via the public registration endpoint."""
+    response = client.post("/v1/auth/register", json=user_credentials)
+    assert response.status_code == 201
+    return response.json()
+
+
+@pytest.fixture(scope="function")
+def auth_token(client, user_credentials, registered_user):
+    """Log in and return a bearer token for the registered user."""
+    response = client.post(
+        "/v1/auth/token",
+        data={
+            "username": user_credentials["email"],
+            "password": user_credentials["password"],
+        },
+    )
+    assert response.status_code == 200
+    return response.json()["access_token"]
+
+
+@pytest.fixture(scope="function")
+def auth_headers(auth_token):
+    """Authorization header for authenticated requests."""
+    return {"Authorization": f"Bearer {auth_token}"}

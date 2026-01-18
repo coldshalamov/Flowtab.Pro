@@ -1,7 +1,10 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+import re
+from html import escape
+
+from pydantic import BaseModel, Field, field_validator
 
 
 class PromptCreate(BaseModel):
@@ -109,6 +112,11 @@ class PromptRead(BaseModel):
         description="Additional notes or warnings",
     )
 
+    author_id: str | None = Field(
+        default=None,
+        description="ID of the user who created this prompt",
+    )
+
     createdAt: datetime = Field(
         description="ISO 8601 timestamp when the prompt was created",
     )
@@ -145,6 +153,36 @@ class PromptListResponse(BaseModel):
         ge=0,
         description="Total number of prompts matching the query",
     )
+
+
+class CommentCreate(BaseModel):
+    body: str = Field(min_length=1, max_length=5000)
+
+    @field_validator("body")
+    @classmethod
+    def validate_body(cls, v: str) -> str:
+        # Normalize and reduce control characters.
+        v = v.strip()
+        v = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", v)
+
+        # Escape HTML so the frontend can safely render as text even if it
+        # accidentally uses an unsafe rendering path.
+        return escape(v, quote=False)
+
+
+class CommentRead(BaseModel):
+    id: str
+    prompt_id: str
+    author_id: str
+    body: str
+    createdAt: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class CommentListResponse(BaseModel):
+    items: list[CommentRead]
 
 
 class TagsResponse(BaseModel):
@@ -216,6 +254,26 @@ class UserRead(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class OAuthExchangeRequest(BaseModel):
+    code: str = Field(description="OAuth authorization code")
+    redirect_uri: str = Field(
+        description="Redirect URI used during OAuth authorization"
+    )
+    state: str = Field(
+        description="OAuth state returned by /v1/auth/oauth/{provider}/start"
+    )
+    code_verifier: str = Field(
+        description="PKCE code verifier returned by /v1/auth/oauth/{provider}/start"
+    )
+
+
+class OAuthStartResponse(BaseModel):
+    authorize_url: str = Field(description="Provider authorization URL")
+    state: str = Field(description="State to send back to /exchange")
+    code_verifier: str = Field(description="PKCE verifier to store client-side")
+    code_challenge: str = Field(description="PKCE challenge sent to provider")
 
 
 class TokenData(BaseModel):

@@ -11,9 +11,11 @@ export interface Prompt {
   promptText: string;
   steps: string[];
   notes: string;
+  author_id?: string;
   createdAt: string; // ISO
   updatedAt: string; // ISO
 }
+
 
 export interface PromptListResponse {
   items: Prompt[];

@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Column
-from sqlalchemy import JSON
+from sqlalchemy import JSON, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
@@ -53,12 +53,79 @@ class Prompt(SQLModel, table=True):
 
     notes: str | None = Field(default=None)
 
+    author_id: str | None = Field(
+        default=None,
+        foreign_key="users.id",
+        description="ID of the user who created this prompt",
+    )
+
     createdAt: datetime = Field(
         default_factory=datetime.utcnow, description="Creation timestamp"
     )
 
     updatedAt: datetime = Field(
         default_factory=datetime.utcnow, description="Last update timestamp"
+    )
+
+
+class OAuthAccount(SQLModel, table=True):
+    """Database model for OAuth accounts linked to a user."""
+
+    __tablename__ = "oauth_accounts"
+    __table_args__ = (
+        UniqueConstraint("provider", "provider_user_id", name="uq_oauth_provider_user"),
+    )
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+        description="Unique identifier (UUID)",
+    )
+
+    user_id: str = Field(
+        foreign_key="users.id",
+        index=True,
+        description="User ID owning this OAuth account",
+    )
+
+    provider: str = Field(index=True, max_length=32)
+    provider_user_id: str = Field(index=True, max_length=255)
+
+    email: str | None = Field(default=None, max_length=255)
+    name: str | None = Field(default=None, max_length=255)
+
+    createdAt: datetime = Field(
+        default_factory=datetime.utcnow, description="Creation timestamp"
+    )
+
+
+class Comment(SQLModel, table=True):
+    """Forum comment attached to a prompt."""
+
+    __tablename__ = "comments"
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+        description="Unique identifier (UUID)",
+    )
+
+    prompt_id: str = Field(
+        foreign_key="prompts.id",
+        index=True,
+        description="Prompt ID this comment belongs to",
+    )
+
+    author_id: str = Field(
+        foreign_key="users.id",
+        index=True,
+        description="User ID who wrote the comment",
+    )
+
+    body: str = Field(description="Comment body")
+
+    createdAt: datetime = Field(
+        default_factory=datetime.utcnow, description="Creation timestamp"
     )
 
 

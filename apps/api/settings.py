@@ -21,6 +21,28 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
+    # OAuth settings (set these in apps/api/.env for production)
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+
+    github_client_id: str | None = None
+    github_client_secret: str | None = None
+
+    facebook_client_id: str | None = None
+    facebook_client_secret: str | None = None
+
+    # Exact-match allowlist of redirect URIs we will accept in OAuth flows.
+    # Comma-separated list.
+    oauth_redirect_allowlist: str = "http://localhost/callback"
+
+    @property
+    def oauth_redirect_allowlist_list(self) -> List[str]:
+        return [
+            uri.strip()
+            for uri in self.oauth_redirect_allowlist.split(",")
+            if uri.strip()
+        ]
+
     cors_origins: str = "http://localhost:3000,http://localhost:8000"
 
     @property

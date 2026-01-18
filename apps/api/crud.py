@@ -13,7 +13,7 @@ from sqlmodel import Session, select
 from sqlalchemy import String, func, or_
 from sqlalchemy.sql.expression import cast
 
-from apps.api.models import Prompt, User
+from apps.api.models import Prompt, User, Comment
 from apps.api.schemas import PromptCreate, UserCreate
 
 
@@ -224,7 +224,9 @@ def slugify_title(title: str) -> str:
     return slug
 
 
-def create_prompt(session: Session, prompt_create: PromptCreate) -> Prompt:
+def create_prompt(
+    session: Session, prompt_create: PromptCreate, author_id: str | None = None
+) -> Prompt:
     """
     Create a new prompt from PromptCreate schema.
 
@@ -234,6 +236,7 @@ def create_prompt(session: Session, prompt_create: PromptCreate) -> Prompt:
     Args:
         session: SQLAlchemy database session
         prompt_create: Pydantic schema with prompt data
+        author_id: ID of the user creating the prompt
 
     Returns:
         The created prompt
@@ -263,6 +266,7 @@ def create_prompt(session: Session, prompt_create: PromptCreate) -> Prompt:
         promptText=prompt_create.promptText,
         steps=prompt_create.steps or [],
         notes=prompt_create.notes if prompt_create.notes else None,
+        author_id=author_id,
     )
 
     # Add to session, commit, and refresh
@@ -271,6 +275,35 @@ def create_prompt(session: Session, prompt_create: PromptCreate) -> Prompt:
     session.refresh(prompt)
 
     return prompt
+
+
+def get_comments_for_prompt(session: Session, prompt_id: str) -> list[Comment]:
+    statement = (
+        select(Comment)
+        .where(Comment.prompt_id == prompt_id)
+        .order_by(Comment.createdAt.asc())
+    )
+    return list(session.exec(statement).all())
+
+
+def create_comment(
+    session: Session, *, prompt_id: str, author_id: str, body: str
+) -> Comment:
+    comment = Comment(prompt_id=prompt_id, author_id=author_id, body=body)
+    session.add(comment)
+    session.commit()
+    session.refresh(comment)
+    return comment
+
+
+def get_comment_by_id(session: Session, comment_id: str) -> Comment | None:
+    statement = select(Comment).where(Comment.id == comment_id)
+    return session.exec(statement).first()
+
+
+def delete_comment(session: Session, comment: Comment) -> None:
+    session.delete(comment)
+    session.commit()
 
 
 def delete_prompt(session: Session, prompt: Prompt) -> None:

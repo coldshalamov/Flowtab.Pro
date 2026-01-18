@@ -3,7 +3,7 @@ from typing import Generator
 
 from sqlmodel import SQLModel, Session, create_engine
 
-from apps.api.models import Prompt, User
+from apps.api.models import Prompt, User, OAuthAccount, Comment
 from apps.api.settings import settings
 
 # Use test database URL if TESTING environment variable is set
