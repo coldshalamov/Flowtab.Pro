@@ -71,7 +71,7 @@ export default function SubmitPage() {
                 <div className="mb-12 space-y-6">
                     <Link href="/library" className="group inline-flex items-center text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
                         <ChevronLeft className="mr-1.5 h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
-                        Return to Archive
+                        Return to Library
                     </Link>
 
                     <div className="space-y-2">
@@ -80,7 +80,7 @@ export default function SubmitPage() {
                                 <Share2 className="h-5 w-5 text-primary-foreground" />
                             </div>
                             <h1 className="text-4xl font-bold tracking-tight text-foreground uppercase">
-                                Deploy Recipe
+                                Submit Prompt
                             </h1>
                         </div>
                         <p className="text-muted-foreground font-medium uppercase tracking-widest text-xs opacity-60 ml-12">
@@ -92,7 +92,7 @@ export default function SubmitPage() {
                 <form onSubmit={handleSubmit} className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 bg-secondary/30 p-8 md:p-12 rounded-lg border border-border/40">
                     <div className="space-y-8">
                         <div className="grid gap-3">
-                            <Label htmlFor="title" className="text-xs uppercase tracking-widest font-bold opacity-60">Recipe Title *</Label>
+                            <Label htmlFor="title" className="text-xs uppercase tracking-widest font-bold opacity-60">Prompt Title *</Label>
                             <Input
                                 id="title"
                                 placeholder="e.g. LinkedIn Reachout Automator"
@@ -127,7 +127,7 @@ export default function SubmitPage() {
                             </div>
 
                             <div className="grid gap-3">
-                                <Label htmlFor="tags" className="text-xs uppercase tracking-widest font-bold opacity-60">Cluster Tags</Label>
+                                <Label htmlFor="tags" className="text-xs uppercase tracking-widest font-bold opacity-60">Keywords</Label>
                                 <Input
                                     id="tags"
                                     placeholder="social, marketing, sync"
@@ -135,6 +135,24 @@ export default function SubmitPage() {
                                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                                     className="h-11 bg-background border-border font-medium"
                                 />
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                    {["Social Media", "Work", "Programming", "Marketing", "Data", "Writing"].map((tag) => (
+                                        <button
+                                            key={tag}
+                                            type="button"
+                                            onClick={() => {
+                                                const currentTags = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
+                                                if (!currentTags.includes(tag)) {
+                                                    const newValue = currentTags.length > 0 ? `${formData.tags}, ${tag}` : tag;
+                                                    setFormData({ ...formData, tags: newValue });
+                                                }
+                                            }}
+                                            className="px-2 py-1 text-[10px] uppercase tracking-wider font-bold rounded-sm border border-border bg-muted/30 hover:bg-foreground hover:text-background transition-colors cursor-pointer"
+                                        >
+                                            + {tag}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
@@ -154,7 +172,8 @@ export default function SubmitPage() {
                             <Label htmlFor="steps" className="text-xs uppercase tracking-widest font-bold opacity-60">Execution Steps (New line per step)</Label>
                             <Textarea
                                 id="steps"
-                                placeholder="1. Initialize synchronization...&#10;2. Execute protocol..."
+                                placeholder="1. Initialize synchronization...
+2. Execute protocol..."
                                 value={formData.steps}
                                 onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
                                 className="min-h-[120px] bg-background border-border font-medium"

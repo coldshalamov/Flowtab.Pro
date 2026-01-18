@@ -85,7 +85,7 @@ export function SearchAndFilters({ availableTags }: { availableTags: string[] })
             </div>
 
             <div className="space-y-3">
-                <Label className="text-foreground text-xs uppercase tracking-widest font-bold opacity-60">Cluster Tags</Label>
+                <Label className="text-foreground text-xs uppercase tracking-widest font-bold opacity-60">Keywords</Label>
                 <div className="flex flex-wrap gap-2">
                     {availableTags.map(tag => (
                         <Badge

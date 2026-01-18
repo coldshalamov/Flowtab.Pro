@@ -3,6 +3,7 @@ import { PromptCard } from "@/components/PromptCard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 // Revalidate every hour
 export const revalidate = 3600;
@@ -51,25 +52,42 @@ export default async function Home() {
                 size="lg"
                 className="h-12 px-8 rounded-md border-border bg-background hover:bg-secondary font-semibold text-base transition-all"
               >
-                Submit Recipe
+                Submit Prompt
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* Minimal Footnote */}
-        <div className="mt-32 w-full animate-in fade-in duration-1000 delay-500">
-          <div className="container max-w-5xl px-6 flex flex-col md:flex-row items-center justify-center gap-12 sm:gap-16 opacity-50 hover:opacity-100 transition-opacity duration-500">
-            <a href="https://playwright.dev" target="_blank" rel="noopener noreferrer" className="group">
-              <div className="flex items-center gap-3 group-hover:opacity-100 transition-all">
-                <span className="font-semibold text-foreground/80">Playwright</span>
-              </div>
-            </a>
-            <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" className="group">
-              <div className="flex items-center gap-3 group-hover:opacity-100 transition-all">
-                <span className="font-semibold text-foreground/80">MCP</span>
-              </div>
-            </a>
+        {/* Minimal Tech Stack */}
+        <div className="mt-24 w-full animate-in fade-in duration-1000 delay-500">
+          <div className="flex flex-col items-center gap-8">
+            <span className="text-xl uppercase tracking-[0.2em] text-muted-foreground/60 font-semibold">Works With</span>
+            <div className="container max-w-6xl px-6 flex flex-col md:flex-row items-center justify-center gap-16 sm:gap-24 group/list">
+              <a href="https://checkcomet.com" target="_blank" rel="noopener noreferrer" className="group">
+                <div className="flex items-center gap-5 grayscale group-hover:grayscale-0 opacity-40 group-hover/list:opacity-60 hover:!opacity-100 transition-all duration-500">
+                  <Image src="/images/logos/comet.webp" alt="Comet" width={60} height={60} className="group-hover:text-[#14b8a6]" />
+                  <span className="text-xl font-semibold text-foreground/80">Comet</span>
+                </div>
+              </a>
+              <a href="https://playwright.dev" target="_blank" rel="noopener noreferrer" className="group">
+                <div className="flex items-center gap-5 grayscale group-hover:grayscale-0 opacity-40 group-hover/list:opacity-60 hover:!opacity-100 transition-all duration-500">
+                  <Image src="/images/logos/playwright.png" alt="Playwright" width={60} height={60} />
+                  <span className="text-xl font-semibold text-foreground/80">Playwright</span>
+                </div>
+              </a>
+              <a href="https://www.opera.com/browsers/neon" target="_blank" rel="noopener noreferrer" className="group">
+                <div className="flex items-center gap-5 grayscale group-hover:grayscale-0 opacity-40 group-hover/list:opacity-60 hover:!opacity-100 transition-all duration-500">
+                  <Image src="/images/logos/neon.jpg" alt="Neon" width={60} height={60} />
+                  <span className="text-xl font-semibold text-foreground/80">Neon</span>
+                </div>
+              </a>
+              <a href="https://manus.im" target="_blank" rel="noopener noreferrer" className="group">
+                <div className="flex items-center gap-5 grayscale group-hover:grayscale-0 opacity-40 group-hover/list:opacity-60 hover:!opacity-100 transition-all duration-500">
+                  <Image src="/images/logos/manus.png" alt="Manus" width={60} height={60} className="group-hover:text-foreground" />
+                  <span className="text-xl font-semibold text-foreground/80">Manus</span>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -82,7 +100,7 @@ export default async function Home() {
             <p className="text-muted-foreground font-medium">Curated high-performance workflows.</p>
           </div>
           <Link href="/library" className="group text-sm font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1">
-            View Archive <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            View Library <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 

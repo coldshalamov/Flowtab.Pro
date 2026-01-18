@@ -29,7 +29,7 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                 <div className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <Link href="/library" className="group inline-flex items-center text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
                         <ChevronLeft className="mr-1.5 h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
-                        Archives
+                        Library
                     </Link>
                 </div>
 
@@ -93,7 +93,7 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                             <div className="lg:col-span-3 space-y-8">
                                 <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground">Operational sequence</h3>
                                 <ol className="space-y-6">
-                                    {prompt.steps.map((step, i) => (
+                                    {prompt.steps.map((step: string, i: number) => (
                                         <li key={i} className="flex gap-6 group">
                                             <span className="flex-shrink-0 w-8 h-8 rounded-md bg-secondary border border-border flex items-center justify-center font-bold text-xs text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-all">
                                                 {i + 1}
@@ -107,7 +107,7 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                             {/* Tags and Notes */}
                             <div className="lg:col-span-2 space-y-12">
                                 <div className="space-y-6">
-                                    <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground">Cluster tags</h3>
+                                    <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground">Keywords</h3>
                                     <div className="flex flex-wrap gap-2">
                                         {prompt.tags.map((tag: string) => (
                                             <div key={tag} className="px-3 py-1.5 rounded-md bg-secondary border border-border text-[11px] font-bold uppercase tracking-widest text-muted-foreground">

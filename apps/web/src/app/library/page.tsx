@@ -3,11 +3,14 @@ import { fetchPrompts, fetchTags, type Prompt } from "@/lib/api";
 import { PromptCard } from "@/components/PromptCard";
 import { SearchAndFilters } from "@/components/SearchAndFilters";
 import { SearchFiltersSkeleton } from "@/components/SearchFiltersSkeleton";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Archive // Flowtab.Pro",
-    description: "Browse the archive of high-precision automation prompts and workflows.",
+    title: "Library // Flowtab.Pro",
+    description: "Browse the library of high-precision automation prompts and workflows.",
 };
 
 export default async function LibraryPage(props: {
@@ -29,11 +32,18 @@ export default async function LibraryPage(props: {
         <div className="relative min-h-screen bg-background">
             <div className="container relative z-10 py-16 md:py-24 max-w-screen-2xl mx-auto px-6">
                 <div className="flex flex-col gap-4 mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
-                    <div className="flex items-center gap-3">
-                        <div className="w-1.5 h-8 bg-primary" />
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground uppercase">
-                            Archive // <span className="text-muted-foreground/40">{total}</span>
-                        </h1>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-8 bg-primary" />
+                            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground uppercase">
+                                Library // <span className="text-muted-foreground/40">{total}</span>
+                            </h1>
+                        </div>
+                        <Link href="/submit" className="hidden md:block">
+                            <Button size="lg" className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-bold uppercase tracking-wider px-8 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]">
+                                Submit Prompt <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </Link>
                     </div>
                     <p className="text-sm font-semibold text-muted-foreground/60 tracking-widest uppercase ml-5">
                         Prompt Repositories Synchronized

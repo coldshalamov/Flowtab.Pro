@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Github, Twitter, Mail } from "lucide-react";
+import { Mail, Github } from "lucide-react";
 
 export function SiteFooter() {
     return (
@@ -46,18 +46,28 @@ export function SiteFooter() {
                         </h4>
                         <ul className="space-y-3 text-sm font-medium text-muted-foreground">
                             <li>
-                                <Link href="/library?tags=automation" className="hover:text-foreground transition-colors">
-                                    Automation
+                                <Link href="/library?tags=social-media" className="hover:text-foreground transition-colors">
+                                    Social Media
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/library?tags=playwright" className="hover:text-foreground transition-colors">
-                                    Playwright
+                                <Link href="/library?tags=work" className="hover:text-foreground transition-colors">
+                                    Work
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/library?tags=testing" className="hover:text-foreground transition-colors">
-                                    Testing
+                                <Link href="/library?tags=programming" className="hover:text-foreground transition-colors">
+                                    Programming
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/library?tags=marketing" className="hover:text-foreground transition-colors">
+                                    Marketing
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/library?tags=data" className="hover:text-foreground transition-colors">
+                                    Data
                                 </Link>
                             </li>
                         </ul>
@@ -79,16 +89,7 @@ export function SiteFooter() {
                                 <Github className="h-4 w-4" />
                             </a>
                             <a
-                                href="https://twitter.com/flowtabpro"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-10 h-10 flex items-center justify-center rounded-md border border-border bg-background hover:bg-secondary hover:border-foreground/20 text-muted-foreground hover:text-foreground transition-all"
-                                aria-label="Twitter"
-                            >
-                                <Twitter className="h-4 w-4" />
-                            </a>
-                            <a
-                                href="mailto:hello@flowtab.pro"
+                                href="mailto:devteamrob.helix@gmail.com"
                                 className="w-10 h-10 flex items-center justify-center rounded-md border border-border bg-background hover:bg-secondary hover:border-foreground/20 text-muted-foreground hover:text-foreground transition-all"
                                 aria-label="Email"
                             >
