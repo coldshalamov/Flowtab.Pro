@@ -33,7 +33,9 @@ class Settings(BaseSettings):
 
     # Exact-match allowlist of redirect URIs we will accept in OAuth flows.
     # Comma-separated list.
-    oauth_redirect_allowlist: str = "http://localhost/callback"
+    # NOTE: exact-match allowlist. Include dev callback routes here.
+    # Our frontend uses a single callback route and passes provider as a query param.
+    oauth_redirect_allowlist: str = "http://localhost/callback,http://localhost:3000/auth/callback?provider=google,http://localhost:3000/auth/callback?provider=github,http://localhost:3000/auth/callback?provider=facebook"
 
     @property
     def oauth_redirect_allowlist_list(self) -> List[str]:

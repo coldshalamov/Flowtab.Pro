@@ -125,6 +125,11 @@ class PromptRead(BaseModel):
         description="ISO 8601 timestamp when the prompt was last updated",
     )
 
+    like_count: int = Field(
+        default=0,
+        description="Number of likes",
+    )
+
     class Config:
         from_attributes = True
 
@@ -176,9 +181,15 @@ class CommentRead(BaseModel):
     author_id: str
     body: str
     createdAt: datetime
+    like_count: int = 0
 
     class Config:
         from_attributes = True
+
+
+class LikeStatusResponse(BaseModel):
+    liked: bool
+    likeCount: int
 
 
 class CommentListResponse(BaseModel):

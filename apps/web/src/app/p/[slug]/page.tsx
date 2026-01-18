@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/CopyButton";
 import { AdminControls } from "@/components/AdminControls";
+import { LikeButton } from "@/components/LikeButton";
+import { CommentsSection } from "@/components/CommentsSection";
 import { Layers, ChevronLeft, Clock, Globe } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -13,7 +15,7 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
     const params = await Promise.resolve(props.params);
     const prompt = await fetchPrompt(params.slug);
-    if (!prompt) return { title: "Prompt Not Found" };
+    if (!prompt) return { title: "Flow Not Found" };
     return { title: `${prompt.title} // Flowtab.Pro`, description: prompt.summary };
 }
 
@@ -59,20 +61,29 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
 
                 <div className="grid gap-12 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
                     {/* Actions Panel */}
-                    <div className="grid sm:grid-cols-2 gap-4 sticky top-20 z-20 bg-background/80 backdrop-blur-md p-4 -mx-4 rounded-lg border border-border/40 shadow-sm">
+                    <div className="grid sm:grid-cols-3 gap-4 sticky top-20 z-20 bg-background/80 backdrop-blur-md p-4 -mx-4 rounded-lg border border-border/40 shadow-sm">
                         <CopyButton
                             text={prompt.promptText}
-                            label="Copy Prompt"
+                            label="Copy Flow"
                             variant="default"
                             className="h-12 bg-foreground text-background hover:bg-foreground/90 font-bold uppercase tracking-widest text-xs"
                         />
                         <CopyButton
                             text={jsonString}
-                            label="Copy Metadata"
+                            label="Copy Flow Metadata"
                             variant="outline"
                             className="h-12 border-border font-bold uppercase tracking-widest text-xs"
                         />
-                        <AdminControls slug={prompt.slug} />
+                        <LikeButton
+                            targetType="prompt"
+                            targetId={prompt.slug}
+                            initialCount={prompt.like_count ?? 0}
+                            size="default"
+                            className="h-12 font-bold uppercase tracking-widest text-xs"
+                        />
+                        <div className="sm:col-span-3">
+                            <AdminControls slug={prompt.slug} />
+                        </div>
                     </div>
 
                     <div className="grid gap-12">
@@ -129,11 +140,13 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                                         </div>
                                     </div>
                                 )}
-                            </div>
                         </div>
+
+                        <CommentsSection promptSlug={prompt.slug} promptId={prompt.id} />
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     );
 }

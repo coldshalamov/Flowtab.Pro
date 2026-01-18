@@ -14,6 +14,25 @@ export interface Prompt {
   author_id?: string;
   createdAt: string; // ISO
   updatedAt: string; // ISO
+  like_count?: number;
+}
+
+export interface Comment {
+  id: string;
+  prompt_id: string;
+  author_id: string;
+  body: string;
+  createdAt: string; // ISO
+  like_count?: number;
+}
+
+export interface CommentListResponse {
+  items: Comment[];
+}
+
+export interface LikeStatusResponse {
+  liked: boolean;
+  likeCount: number;
 }
 
 

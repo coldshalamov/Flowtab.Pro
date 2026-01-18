@@ -11,9 +11,10 @@ from typing import Any
 
 from sqlmodel import Session, select
 from sqlalchemy import String, func, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import cast
 
-from apps.api.models import Prompt, User, Comment
+from apps.api.models import Prompt, User, Comment, Like
 from apps.api.schemas import PromptCreate, UserCreate
 
 
@@ -304,6 +305,51 @@ def get_comment_by_id(session: Session, comment_id: str) -> Comment | None:
 def delete_comment(session: Session, comment: Comment) -> None:
     session.delete(comment)
     session.commit()
+
+
+def get_like(
+    session: Session, *, user_id: str, target_type: str, target_id: str
+) -> Like | None:
+    statement = select(Like).where(
+        Like.user_id == user_id,
+        Like.target_type == target_type,
+        Like.target_id == target_id,
+    )
+    return session.exec(statement).first()
+
+
+def like_target(
+    session: Session, *, user_id: str, target_type: str, target_id: str
+) -> bool:
+    """Ensure a like exists. Returns True if a new like was created."""
+
+    like = Like(user_id=user_id, target_type=target_type, target_id=target_id)
+    session.add(like)
+    try:
+        session.commit()
+        return True
+    except IntegrityError:
+        session.rollback()
+        return False
+
+
+def unlike_target(
+    session: Session, *, user_id: str, target_type: str, target_id: str
+) -> bool:
+    """Ensure a like is removed. Returns True if a like was deleted."""
+
+    like = get_like(
+        session,
+        user_id=user_id,
+        target_type=target_type,
+        target_id=target_id,
+    )
+    if not like:
+        return False
+
+    session.delete(like)
+    session.commit()
+    return True
 
 
 def delete_prompt(session: Session, prompt: Prompt) -> None:

@@ -27,11 +27,11 @@ export function AdminControls({ slug }: { slug: string }) {
     const handleDelete = async () => {
         const success = await deletePrompt(slug);
         if (success) {
-            toast.success("Prompt deleted");
+            toast.success("Flow deleted");
             router.push("/library");
             router.refresh();
         } else {
-            toast.error("Failed to delete prompt");
+            toast.error("Failed to delete flow");
         }
     };
 
@@ -47,7 +47,7 @@ export function AdminControls({ slug }: { slug: string }) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the prompt from the database.
+                        This action cannot be undone. This will permanently delete the flow from the database.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

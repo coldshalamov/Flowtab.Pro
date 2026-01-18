@@ -23,6 +23,7 @@ from apps.api.schemas import (
     CommentCreate,
     CommentRead,
     CommentListResponse,
+    LikeStatusResponse,
     TagsResponse,
     UserCreate,
     UserRead,
@@ -42,6 +43,8 @@ from apps.api.crud import (
     create_comment,
     get_comment_by_id,
     delete_comment,
+    like_target,
+    unlike_target,
 )
 from apps.api.settings import settings
 from apps.api.db import get_session
@@ -62,7 +65,8 @@ import secrets
 
 import httpx
 
-from apps.api.models import User, OAuthAccount
+from apps.api.models import User, OAuthAccount, Prompt, Comment
+from sqlalchemy.exc import IntegrityError
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 
@@ -1003,6 +1007,222 @@ def create_prompt_comment(
 
     except Exception:
         logger.exception("Unhandled error in POST /v1/prompts/%s/comments", slug)
+        return error_response(
+            error="Internal server error",
+            message="An unexpected error occurred.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@router.put(
+    "/prompts/{slug}/like",
+    response_model=LikeStatusResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["likes"],
+)
+def like_prompt(
+    slug: str,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+) -> LikeStatusResponse | JSONResponse:
+    """Idempotently like a prompt (flow)."""
+
+    try:
+        prompt = get_prompt_by_slug(session=session, slug=slug)
+        if prompt is None:
+            return error_response(
+                error="Not found",
+                message=f"Prompt with slug '{slug}' not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        limiter = _rate_limit(
+            f"like:prompt:{current_user.id}",
+            limit=60,
+            window_seconds=60,
+        )
+        if limiter:
+            return limiter
+
+        created = like_target(
+            session=session,
+            user_id=current_user.id,
+            target_type="prompt",
+            target_id=prompt.id,
+        )
+
+        if created:
+            prompt.like_count = (prompt.like_count or 0) + 1
+            session.add(prompt)
+            session.commit()
+
+        session.refresh(prompt)
+        return LikeStatusResponse(liked=True, likeCount=prompt.like_count)
+
+    except Exception:
+        logger.exception("Unhandled error in PUT /v1/prompts/%s/like", slug)
+        return error_response(
+            error="Internal server error",
+            message="An unexpected error occurred.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@router.delete(
+    "/prompts/{slug}/like",
+    response_model=LikeStatusResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["likes"],
+)
+def unlike_prompt(
+    slug: str,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+) -> LikeStatusResponse | JSONResponse:
+    """Idempotently unlike a prompt (flow)."""
+
+    try:
+        prompt = get_prompt_by_slug(session=session, slug=slug)
+        if prompt is None:
+            return error_response(
+                error="Not found",
+                message=f"Prompt with slug '{slug}' not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        limiter = _rate_limit(
+            f"unlike:prompt:{current_user.id}",
+            limit=60,
+            window_seconds=60,
+        )
+        if limiter:
+            return limiter
+
+        deleted = unlike_target(
+            session=session,
+            user_id=current_user.id,
+            target_type="prompt",
+            target_id=prompt.id,
+        )
+
+        if deleted and (prompt.like_count or 0) > 0:
+            prompt.like_count = prompt.like_count - 1
+            session.add(prompt)
+            session.commit()
+
+        session.refresh(prompt)
+        return LikeStatusResponse(liked=False, likeCount=prompt.like_count)
+
+    except Exception:
+        logger.exception("Unhandled error in DELETE /v1/prompts/%s/like", slug)
+        return error_response(
+            error="Internal server error",
+            message="An unexpected error occurred.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@router.put(
+    "/comments/{comment_id}/like",
+    response_model=LikeStatusResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["likes"],
+)
+def like_comment(
+    comment_id: str,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+) -> LikeStatusResponse | JSONResponse:
+    """Idempotently like a comment."""
+
+    try:
+        comment = get_comment_by_id(session=session, comment_id=comment_id)
+        if comment is None:
+            return error_response(
+                error="Not found",
+                message="Comment not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        limiter = _rate_limit(
+            f"like:comment:{current_user.id}",
+            limit=120,
+            window_seconds=60,
+        )
+        if limiter:
+            return limiter
+
+        created = like_target(
+            session=session,
+            user_id=current_user.id,
+            target_type="comment",
+            target_id=comment.id,
+        )
+
+        if created:
+            comment.like_count = (comment.like_count or 0) + 1
+            session.add(comment)
+            session.commit()
+
+        session.refresh(comment)
+        return LikeStatusResponse(liked=True, likeCount=comment.like_count)
+
+    except Exception:
+        logger.exception("Unhandled error in PUT /v1/comments/%s/like", comment_id)
+        return error_response(
+            error="Internal server error",
+            message="An unexpected error occurred.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@router.delete(
+    "/comments/{comment_id}/like",
+    response_model=LikeStatusResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["likes"],
+)
+def unlike_comment(
+    comment_id: str,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+) -> LikeStatusResponse | JSONResponse:
+    """Idempotently unlike a comment."""
+
+    try:
+        comment = get_comment_by_id(session=session, comment_id=comment_id)
+        if comment is None:
+            return error_response(
+                error="Not found",
+                message="Comment not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        limiter = _rate_limit(
+            f"unlike:comment:{current_user.id}",
+            limit=120,
+            window_seconds=60,
+        )
+        if limiter:
+            return limiter
+
+        deleted = unlike_target(
+            session=session,
+            user_id=current_user.id,
+            target_type="comment",
+            target_id=comment.id,
+        )
+
+        if deleted and (comment.like_count or 0) > 0:
+            comment.like_count = comment.like_count - 1
+            session.add(comment)
+            session.commit()
+
+        session.refresh(comment)
+        return LikeStatusResponse(liked=False, likeCount=comment.like_count)
+
+    except Exception:
+        logger.exception("Unhandled error in DELETE /v1/comments/%s/like", comment_id)
         return error_response(
             error="Internal server error",
             message="An unexpected error occurred.",

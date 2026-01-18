@@ -10,3 +10,4 @@
 - Added `oauth_accounts` table + unique constraint on `(provider, provider_user_id)` and an Alembic migration.
 - Implemented forum-style comments on prompts (create/list/delete) + tests + Alembic migration.
 - Hardened comments against stored XSS by HTML-escaping comment bodies and added best-effort in-memory rate limits for comment create/delete.
+- Added community UI scaffolding (likes + comments) and OAuth callback plumbing in the Next.js frontend.

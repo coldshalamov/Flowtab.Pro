@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
- 
-export function middleware(request: NextRequest) {
+import { NextResponse } from "next/server";
+
+export function middleware() {
   // We can't verify the token validity easily here without a backend call,
   // but we can check if it exists to prevent obvious unauthorized access.
   // For a static export or simple app, client-side checks are often used,
@@ -12,10 +11,10 @@ export function middleware(request: NextRequest) {
   // middleware can't see the token. 
   // We will rely on the client-side checks in the components (AuthProvider/useEffect).
   
-  return NextResponse.next()
+  return NextResponse.next();
 }
  
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: '/submit/:path*',
-}
+  matcher: "/submit/:path*",
+};

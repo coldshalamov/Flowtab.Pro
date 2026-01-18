@@ -67,6 +67,8 @@ class Prompt(SQLModel, table=True):
         default_factory=datetime.utcnow, description="Last update timestamp"
     )
 
+    like_count: int = Field(default=0, description="Number of likes")
+
 
 class OAuthAccount(SQLModel, table=True):
     """Database model for OAuth accounts linked to a user."""
@@ -123,6 +125,33 @@ class Comment(SQLModel, table=True):
     )
 
     body: str = Field(description="Comment body")
+
+    createdAt: datetime = Field(
+        default_factory=datetime.utcnow, description="Creation timestamp"
+    )
+
+    like_count: int = Field(default=0, description="Number of likes")
+
+
+class Like(SQLModel, table=True):
+    """A user's like on a prompt (flow) or comment."""
+
+    __tablename__ = "likes"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "target_type", "target_id", name="uq_like_user_target"
+        ),
+    )
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+        description="Unique identifier (UUID)",
+    )
+
+    user_id: str = Field(foreign_key="users.id", index=True)
+    target_type: str = Field(index=True, max_length=16)  # prompt | comment
+    target_id: str = Field(index=True)
 
     createdAt: datetime = Field(
         default_factory=datetime.utcnow, description="Creation timestamp"
