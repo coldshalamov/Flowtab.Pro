@@ -1,8 +1,8 @@
 # Flowtab.Pro
 
-**A searchable library of automated browser prompt recipes for Comet, Playwright, and Opera Neon.**
+**A searchable library of automated browser prompt flows for Playwright, Opera Neon, ChatGPT, Atlas, and Manis.**
 
-Flowtab.Pro helps developers and automation engineers discover, share, and reuse battle-tested browser automation workflows. Browse prompts by difficulty, filter by tools, and copy ready-to-use recipes directly into your projects.
+Flowtab.Pro helps developers and automation engineers discover, share, and reuse battle-tested browser automation workflows. Browse prompts, filter by tools, and copy ready-to-use flows directly into your projects.
 
 ---
 

@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function DiscussionDetailPage({
+export default async function ThreadDetailPage({
     params,
 }: {
     params: { slug: string };
@@ -64,7 +64,7 @@ export default async function DiscussionDetailPage({
                 <div className="pt-8 border-t border-gray-800">
                     <div className="flex items-center gap-3 mb-8">
                         <MessageSquare className="text-blue-500" />
-                        <h2 className="text-2xl font-semibold">Discussion</h2>
+                        <h2 className="text-2xl font-semibold">Comments</h2>
                     </div>
 
                     <CommentsSection slug={params.slug} />

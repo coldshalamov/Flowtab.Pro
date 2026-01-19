@@ -115,7 +115,7 @@ export default async function Home() {
       <section className="container py-20 md:py-32 space-y-12 px-4 max-w-screen-2xl mx-auto">
         <div className="flex items-end justify-between border-b-2 border-border/60 pb-6">
           <div className="space-y-1">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">Featured Recipes</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">Featured Flows</h2>
             <p className="text-muted-foreground font-medium">Curated high-performance workflows.</p>
           </div>
           <Link href="/library" className="group text-sm font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1">

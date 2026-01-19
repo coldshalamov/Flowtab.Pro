@@ -6,14 +6,14 @@ import { submitPrompt } from "@/lib/api";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
-interface DiscussionForm {
+interface ThreadForm {
     title: string;
     summary: string;
     body: string;
     tags: string;
 }
 
-export default function NewDiscussionPage() {
+export default function NewThreadPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -21,9 +21,9 @@ export default function NewDiscussionPage() {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<DiscussionForm>();
+    } = useForm<ThreadForm>();
 
-    const onSubmit = async (data: DiscussionForm) => {
+    const onSubmit = async (data: ThreadForm) => {
         setIsSubmitting(true);
         try {
             const success = await submitPrompt({
@@ -43,7 +43,7 @@ export default function NewDiscussionPage() {
                 router.push("/forum");
                 router.refresh();
             } else {
-                alert("Failed to create discussion. Please try again.");
+                alert("Failed to create thread. Please try again.");
             }
         } finally {
             setIsSubmitting(false);
@@ -53,7 +53,7 @@ export default function NewDiscussionPage() {
     return (
         <div className="min-h-screen bg-black text-white p-4">
             <div className="max-w-2xl mx-auto py-12">
-                <h1 className="text-3xl font-bold mb-8">Start a Discussion</h1>
+                <h1 className="text-3xl font-bold mb-8">Start a Thread</h1>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div className="space-y-2">
@@ -102,7 +102,7 @@ export default function NewDiscussionPage() {
                             className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             {isSubmitting && <Loader2 className="animate-spin" size={18} />}
-                            {isSubmitting ? "Posting..." : "Create Discussion"}
+                            {isSubmitting ? "Posting..." : "Create Thread"}
                         </button>
                         <button
                             type="button"

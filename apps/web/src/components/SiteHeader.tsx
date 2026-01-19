@@ -65,7 +65,7 @@ export function SiteHeader() {
                             <Link href="/submit">
                                 <Button size="sm" className="h-8 px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-xs font-medium shadow-sm">
                                     <Plus className="h-3.5 w-3.5 mr-1.5" />
-                                    <span className="hidden sm:inline">Add Recipe</span>
+                                    <span className="hidden sm:inline">Add Flow</span>
                                 </Button>
                             </Link>
                         </div>

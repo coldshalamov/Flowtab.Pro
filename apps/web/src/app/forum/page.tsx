@@ -15,10 +15,10 @@ export default async function ForumPage() {
                 <div className="flex justify-between items-center mb-8">
                     <div>
                         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 mb-2">
-                            Community Forum
+                            Forum
                         </h1>
                         <p className="text-gray-400">
-                            Discuss automation strategies, request recipes, and share tips.
+                            Discuss automation strategies, request flows, and share tips.
                         </p>
                     </div>
                     <Link
@@ -26,7 +26,7 @@ export default async function ForumPage() {
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                     >
                         <Plus size={18} />
-                        New Discussion
+                        New Thread
                     </Link>
                 </div>
 
@@ -34,7 +34,7 @@ export default async function ForumPage() {
                     {discussions.length === 0 ? (
                         <div className="text-center py-12 border border-gray-800 rounded-xl bg-gray-900/50">
                             <MessageSquare size={48} className="mx-auto text-gray-700 mb-4" />
-                            <h3 className="text-xl font-semibold text-gray-300">No discussions yet</h3>
+                            <h3 className="text-xl font-semibold text-gray-300">No threads yet</h3>
                             <p className="text-gray-500 max-w-sm mx-auto mt-2">
                                 Be the first to start a conversation in the community!
                             </p>

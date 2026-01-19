@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           the product. If you add analytics, disclose what you collect and why.
         </p>
         <p>
-          Submissions you provide (prompt recipes) may be stored and displayed
+          Submissions you provide (prompt flows) may be stored and displayed
           publicly after review.
         </p>
         <p>
