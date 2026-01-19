@@ -26,6 +26,22 @@ def get_user_by_email(session: Session, email: str) -> User | None:
     return session.exec(statement).first()
 
 
+def get_user_by_username(session: Session, username: str) -> User | None:
+    """
+    Get a user by username.
+    """
+    statement = select(User).where(User.username == username)
+    return session.exec(statement).first()
+
+
+def get_user_by_email_or_username(session: Session, login: str) -> User | None:
+    """
+    Get a user by email or username.
+    """
+    statement = select(User).where(or_(User.email == login, User.username == login))
+    return session.exec(statement).first()
+
+
 def create_user(
     session: Session, user_create: UserCreate, hashed_password: str
 ) -> User:
@@ -34,6 +50,7 @@ def create_user(
     """
     user = User(
         email=user_create.email,
+        username=user_create.username,
         hashed_password=hashed_password,
         is_active=True,
         is_superuser=False,
@@ -306,10 +323,13 @@ def update_prompt(
     return prompt
 
 
+from sqlalchemy.orm import joinedload
+
 def get_comments_for_prompt(session: Session, prompt_id: str) -> list[Comment]:
     statement = (
         select(Comment)
         .where(Comment.prompt_id == prompt_id)
+        .options(joinedload(Comment.author))
         .order_by(Comment.createdAt.asc())
     )
     return list(session.exec(statement).all())

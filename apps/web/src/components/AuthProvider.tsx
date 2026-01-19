@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  login: (loginId: string, password: string) => Promise<void>;
+  register: (email: string, username: string, password: string) => Promise<void>;
   completeLogin: (token: string) => Promise<void>;
   logout: () => void;
 }
@@ -45,9 +45,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (loginId: string, password: string) => {
     try {
-      const { access_token } = await apiLogin(email, password);
+      const { access_token } = await apiLogin(loginId, password);
       await completeLogin(access_token);
       router.push("/");
       router.refresh();
@@ -56,11 +56,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (email: string, username: string, password: string) => {
     try {
-      await apiRegister(email, password);
+      await apiRegister(email, username, password);
       // Auto login after register
-      await login(email, password);
+      await login(username, password);
     } catch (error) {
       throw error;
     }

@@ -291,13 +291,13 @@ export async function login(email: string, password: string): Promise<AuthRespon
   return await res.json();
 }
 
-export async function register(email: string, password: string): Promise<User> {
+export async function register(email: string, username: string, password: string): Promise<User> {
   const res = await fetch(`${API_BASE}/v1/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, username, password }),
   });
 
   if (!res.ok) {

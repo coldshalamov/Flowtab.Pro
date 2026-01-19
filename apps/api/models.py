@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field, Column
+from sqlmodel import SQLModel, Field, Column, Relationship
 from sqlalchemy import JSON, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
@@ -125,6 +125,7 @@ class Comment(SQLModel, table=True):
     )
 
     body: str = Field(description="Comment body")
+    author: "User" = Relationship(back_populates="comments")
 
     createdAt: datetime = Field(
         default_factory=datetime.utcnow, description="Creation timestamp"
@@ -169,6 +170,7 @@ class User(SQLModel, table=True):
         description="Unique identifier (UUID)",
     )
     email: str = Field(unique=True, index=True, max_length=255)
+    username: str = Field(unique=True, index=True, max_length=255)
     hashed_password: str = Field()
     is_active: bool = Field(default=True)
     is_superuser: bool = Field(default=False)
@@ -176,3 +178,4 @@ class User(SQLModel, table=True):
     createdAt: datetime = Field(
         default_factory=datetime.utcnow, description="Creation timestamp"
     )
+    comments: list["Comment"] = Relationship(back_populates="author")

@@ -145,7 +145,7 @@ export function CommentsSection(props: {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                      {c.author_id}
+                      {c.author?.username || "Ghost User"}
                     </div>
                     <div className="mt-2 text-sm text-foreground/90 whitespace-pre-wrap break-words">
                       {c.body}

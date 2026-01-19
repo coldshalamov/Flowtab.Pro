@@ -198,6 +198,7 @@ class CommentRead(BaseModel):
     id: str
     prompt_id: str
     author_id: str
+    author: UserPublic | None = None
     body: str
     createdAt: datetime
     like_count: int = 0
@@ -264,18 +265,27 @@ class ValidationError(ErrorResponse):
 
 
 class UserBase(BaseModel):
-    email: str = Field(description="User email address")
+    username: str = Field(description="Unique username for display and login", min_length=3, max_length=50)
 
 
 class UserCreate(UserBase):
+    email: str = Field(description="User email address")
     password: str = Field(description="User password", min_length=8)
 
 
-class UserRead(UserBase):
+class UserRead(UserCreate):
     id: str
     is_active: bool
     is_superuser: bool
     createdAt: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class UserPublic(BaseModel):
+    id: str
+    username: str
 
     class Config:
         from_attributes = True

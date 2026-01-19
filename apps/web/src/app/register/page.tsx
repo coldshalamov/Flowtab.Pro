@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
@@ -20,7 +21,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register(email, password);
+      await register(email, username, password);
       toast.success("Account created successfully");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to create account";
@@ -37,7 +38,7 @@ export default function RegisterPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Create an account</CardTitle>
           <CardDescription>
-            Enter your email below to create your account
+            Enter your details below to create your account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -51,6 +52,17 @@ export default function RegisterPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Unique username"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div className="grid gap-2">

@@ -22,9 +22,15 @@ export interface Comment {
   id: string;
   prompt_id: string;
   author_id: string;
+  author?: UserPublic;
   body: string;
   createdAt: string; // ISO
   like_count?: number;
+}
+
+export interface UserPublic {
+  id: string;
+  username: string;
 }
 
 export interface CommentListResponse {
@@ -51,6 +57,7 @@ export interface TagsResponse {
 export interface User {
   id: string;
   email: string;
+  username: string;
   is_active: boolean;
   is_superuser: boolean;
   createdAt: string;

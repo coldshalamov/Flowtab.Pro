@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { startOAuth, type OAuthProvider } from "@/lib/api";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isOAuthLoading, setIsOAuthLoading] = useState<OAuthProvider | null>(null);
@@ -53,7 +53,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await login(loginId, password);
       toast.success("Logged in successfully");
     } catch (error) {
       toast.error("Failed to login. Please check your credentials.");
@@ -69,7 +69,7 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your username or email below to login to your account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -108,14 +108,14 @@ export default function LoginPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="loginId">Username or Email</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
+                id="loginId"
+                type="text"
+                placeholder="Username or m@example.com"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={loginId}
+                onChange={(e) => setLoginId(e.target.value)}
               />
             </div>
             <div className="grid gap-2">

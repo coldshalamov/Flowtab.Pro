@@ -40,6 +40,8 @@ from apps.api.crud import (
     update_prompt,
     delete_prompt,
     get_user_by_email,
+    get_user_by_username,
+    get_user_by_email_or_username,
     create_user,
     get_comments_for_prompt,
     create_comment,
@@ -139,6 +141,13 @@ def register(
         )
 
     hashed_password = get_password_hash(user_in.password)
+    # Check if username is taken
+    if get_user_by_username(session, username=user_in.username):
+        return error_response(
+            error="Conflict",
+            message="Username is already taken",
+            status_code=status.HTTP_409_CONFLICT,
+        )
     user = create_user(session, user_create=user_in, hashed_password=hashed_password)
     return user
 
@@ -150,8 +159,9 @@ def login_for_access_token(
 ):
     """
     OAuth2 compatible token login, get an access token for future requests.
+    Supports login via email or username.
     """
-    user = get_user_by_email(session, email=form_data.username)
+    user = get_user_by_email_or_username(session, login=form_data.username)
     if not user or not verify_password(form_data.password, user.hashed_password):
         return error_response(
             error="Unauthorized",
@@ -667,8 +677,17 @@ def oauth_exchange_code(
                 status_code=status.HTTP_409_CONFLICT,
             )
 
+        # Generate a username from email for OAuth users
+        username_base = email.split("@")[0]
+        username = username_base
+        counter = 1
+        while get_user_by_username(session, username=username):
+            username = f"{username_base}{counter}"
+            counter += 1
+
         user = User(
             email=email,
+            username=username,
             hashed_password=_create_random_password_hash(),
             is_active=True,
             is_superuser=False,
