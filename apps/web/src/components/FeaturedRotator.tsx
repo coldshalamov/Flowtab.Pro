@@ -49,35 +49,29 @@ export function FeaturedRotator({ flows }: FeaturedRotatorProps) {
 
     return (
         <p className="text-sm font-medium text-foreground/60 pt-6 animate-in fade-in duration-1000 delay-500">
-            <span className="relative inline-block overflow-hidden h-[1.4em] align-bottom">
-                {/* Slot 1: The 'Current' item. 
-                    - Idle: Center (Visible)
-                    - Anim: Moves Bottom (Hidden) 
-                    - Reset: Jumps back to Center (With NEW text)
-                */}
+            <span className="inline-grid overflow-hidden h-[1.4em] align-bottom text-center">
+                {/* Slot 1: The 'Current' item. */}
                 <Link
                     href={`/p/${currentFlow.slug}`}
                     className={`
-            inline-block underline-offset-2 hover:text-primary hover:underline
-            ${isAnimating ? 'transition-all duration-700 ease-in-out' : ''}
-            ${isAnimating ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}
-          `}
+                        col-start-1 row-start-1
+                        underline-offset-2 hover:text-primary hover:underline whitespace-nowrap
+                        ${isAnimating ? 'transition-all duration-700 ease-in-out' : ''}
+                        ${isAnimating ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}
+                    `}
                 >
                     {currentFlow.title}
                 </Link>
 
-                {/* Slot 2: The 'Next' item.
-                    - Idle: Top (Hidden)
-                    - Anim: Moves Center (Visible)
-                    - Reset: Jumps back to Top (With NEW text)
-                */}
+                {/* Slot 2: The 'Next' item. */}
                 <Link
                     href={`/p/${nextFlow.slug}`}
                     className={`
-            absolute left-0 top-0 inline-block underline-offset-2 hover:text-primary hover:underline
-            ${isAnimating ? 'transition-all duration-700 ease-in-out' : ''}
-            ${isAnimating ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}
-          `}
+                        col-start-1 row-start-1
+                        underline-offset-2 hover:text-primary hover:underline whitespace-nowrap
+                        ${isAnimating ? 'transition-all duration-700 ease-in-out' : ''}
+                        ${isAnimating ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}
+                    `}
                 >
                     {nextFlow.title}
                 </Link>
