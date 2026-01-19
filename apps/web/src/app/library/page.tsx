@@ -66,8 +66,13 @@ export default async function LibraryPage(props: {
                         ))}
                         {/* Fallback if no featured prompts found, to ensure strip exists as requested */}
                         {featuredPrompts.length === 0 && (
-                            <div className="col-span-full py-8 text-center text-muted-foreground text-sm">
-                                Loading featured flows...
+                            <div className="col-span-full py-12 text-center border-2 border-dashed border-border/20 rounded-xl">
+                                <p className="text-sm font-medium text-muted-foreground/60">
+                                    No featured flows found.
+                                </p>
+                                <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground/40 mt-2">
+                                    Establishing database connection...
+                                </p>
                             </div>
                         )}
                     </div>

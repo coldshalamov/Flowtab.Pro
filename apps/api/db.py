@@ -11,6 +11,10 @@ if os.getenv("TESTING") == "true":
     database_url = "sqlite:///:memory:"
 else:
     database_url = settings.database_url
+    # Fix for Render's DATABASE_URL which often starts with postgres://
+    # but SQLAlchemy requires postgresql://
+    if database_url and database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 if "sqlite" in database_url:
     connect_args = {"check_same_thread": False}

@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     # Comma-separated list.
     # NOTE: exact-match allowlist. Include dev callback routes here.
     # Our frontend uses a single callback route and passes provider as a query param.
-    oauth_redirect_allowlist: str = "http://localhost/callback,http://localhost:3000/auth/callback?provider=google,http://localhost:3000/auth/callback?provider=github,http://localhost:3000/auth/callback?provider=facebook"
+    oauth_redirect_allowlist: str = "http://localhost/callback,http://localhost:3000/auth/callback?provider=google,http://localhost:3000/auth/callback?provider=github,http://localhost:3000/auth/callback?provider=facebook,https://flowtab.pro/auth/callback?provider=google,https://flowtab.pro/auth/callback?provider=github,https://flowtab.pro/auth/callback?provider=facebook,https://www.flowtab.pro/auth/callback?provider=google,https://www.flowtab.pro/auth/callback?provider=github,https://www.flowtab.pro/auth/callback?provider=facebook"
 
     @property
     def oauth_redirect_allowlist_list(self) -> List[str]:
