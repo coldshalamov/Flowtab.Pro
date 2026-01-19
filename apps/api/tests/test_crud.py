@@ -34,7 +34,7 @@ def test_get_prompt_by_slug_found(db_session):
         slug="test-slug",
         title="Test Title",
         summary="Test Summary",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["test"],
         targetSites=["example.com"],
@@ -53,7 +53,7 @@ def test_get_prompt_by_slug_found(db_session):
     assert result.slug == "test-slug"
     assert result.title == "Test Title"
     assert result.summary == "Test Summary"
-    assert result.difficulty == "beginner"
+
 
 
 def test_get_prompt_by_slug_not_found(db_session):
@@ -84,7 +84,7 @@ def test_get_prompts_all(db_session):
             slug=f"test-prompt-{i}",
             title=f"Test Prompt {i}",
             summary=f"Summary {i}",
-            difficulty="beginner",
+
             worksWith=["Chrome"],
             tags=["test"],
             targetSites=["example.com"],
@@ -118,7 +118,7 @@ def test_get_prompts_pagination(db_session):
             slug=f"test-prompt-{i}",
             title=f"Test Prompt {i}",
             summary=f"Summary {i}",
-            difficulty="beginner",
+
             worksWith=["Chrome"],
             tags=["test"],
             targetSites=["example.com"],
@@ -142,40 +142,6 @@ def test_get_prompts_pagination(db_session):
     assert total == 10
 
 
-def test_get_prompts_filter_by_difficulty(db_session):
-    """
-    Test getting prompts filtered by difficulty.
-    
-    Verifies that:
-    - Only prompts with the specified difficulty are returned
-    - The total count reflects the filtered results
-    """
-    from apps.api.models import Prompt
-    
-    # Create prompts with different difficulties
-    difficulties = ["beginner", "intermediate", "advanced"]
-    for i, difficulty in enumerate(difficulties):
-        prompt = Prompt(
-            slug=f"test-prompt-{difficulty}",
-            title=f"Test Prompt {difficulty}",
-            summary=f"Summary {difficulty}",
-            difficulty=difficulty,
-            worksWith=["Chrome"],
-            tags=["test"],
-            targetSites=["example.com"],
-            promptText=f"Prompt text {difficulty}",
-            steps=["Step 1"],
-        )
-        db_session.add(prompt)
-    
-    db_session.commit()
-    
-    # Filter by intermediate difficulty
-    prompts, total = get_prompts(db_session, difficulty="intermediate")
-    
-    assert len(prompts) == 1
-    assert total == 1
-    assert prompts[0].difficulty == "intermediate"
 
 
 def test_get_prompts_filter_by_tags(db_session):
@@ -192,7 +158,7 @@ def test_get_prompts_filter_by_tags(db_session):
         slug="tags-prompt-1",
         title="Tags Prompt 1",
         summary="Prompt with git and workflow",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git", "workflow"],
         targetSites=["example.com"],
@@ -203,7 +169,7 @@ def test_get_prompts_filter_by_tags(db_session):
         slug="tags-prompt-2",
         title="Tags Prompt 2",
         summary="Prompt with git only",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git"],
         targetSites=["example.com"],
@@ -214,7 +180,7 @@ def test_get_prompts_filter_by_tags(db_session):
         slug="tags-prompt-3",
         title="Tags Prompt 3",
         summary="Prompt with workflow only",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["workflow"],
         targetSites=["example.com"],
@@ -248,7 +214,7 @@ def test_get_prompts_search_by_query(db_session):
         slug="search-prompt-1",
         title="Git Automation",
         summary="Automate git workflows",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git"],
         targetSites=["github.com"],
@@ -259,7 +225,7 @@ def test_get_prompts_search_by_query(db_session):
         slug="search-prompt-2",
         title="Browser Testing",
         summary="Test browser applications",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["testing"],
         targetSites=["example.com"],
@@ -270,7 +236,7 @@ def test_get_prompts_search_by_query(db_session):
         slug="search-prompt-3",
         title="Deployment Scripts",
         summary="Deploy applications easily",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["deployment"],
         targetSites=["example.com"],
@@ -304,7 +270,7 @@ def test_get_all_tags(db_session):
         slug="tags-prompt-1",
         title="Tags Prompt 1",
         summary="Prompt with tags",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git", "workflow", "automation"],
         targetSites=["example.com"],
@@ -315,7 +281,7 @@ def test_get_all_tags(db_session):
         slug="tags-prompt-2",
         title="Tags Prompt 2",
         summary="Prompt with overlapping tags",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git", "testing"],
         targetSites=["example.com"],
@@ -326,7 +292,7 @@ def test_get_all_tags(db_session):
         slug="tags-prompt-3",
         title="Tags Prompt 3",
         summary="Prompt with different tags",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["deployment", "ci-cd"],
         targetSites=["example.com"],
@@ -363,7 +329,7 @@ def test_create_prompt_with_slug(db_session):
         slug="explicit-slug",
         title="Test Prompt",
         summary="A test prompt",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["test"],
         targetSites=["example.com"],
@@ -376,7 +342,7 @@ def test_create_prompt_with_slug(db_session):
     assert result.slug == "explicit-slug"
     assert result.title == "Test Prompt"
     assert result.summary == "A test prompt"
-    assert result.difficulty == "beginner"
+
     assert result.worksWith == ["Chrome"]
     assert result.tags == ["test"]
     assert result.targetSites == ["example.com"]
@@ -398,7 +364,7 @@ def test_create_prompt_auto_slug(db_session):
     prompt_create = PromptCreate(
         title="Test Auto Slug Prompt!",
         summary="A test prompt with auto slug",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["test"],
         targetSites=["example.com"],
@@ -426,7 +392,7 @@ def test_create_prompt_duplicate_slug(db_session):
         slug="duplicate-slug",
         title="First Prompt",
         summary="First prompt",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["test"],
         targetSites=["example.com"],
@@ -441,7 +407,7 @@ def test_create_prompt_duplicate_slug(db_session):
         slug="duplicate-slug",
         title="Second Prompt",
         summary="Second prompt",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["test"],
         targetSites=["example.com"],

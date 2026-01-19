@@ -101,7 +101,7 @@ def sample_prompt_data():
         "slug": "test-prompt",
         "title": "Test Prompt",
         "summary": "A test prompt for unit testing",
-        "difficulty": "beginner",
+
         "worksWith": ["Chrome", "Firefox"],
         "tags": ["test", "automation"],
         "targetSites": ["example.com"],
@@ -120,7 +120,7 @@ def seeded_prompts(db_session):
     filtering, and search functionality.
     """
     prompts = []
-    difficulties = ["beginner", "intermediate", "advanced"]
+
     tag_sets = [
         ["git", "workflow"],
         ["automation", "browser"],
@@ -134,7 +134,7 @@ def seeded_prompts(db_session):
             slug=f"test-prompt-{i}",
             title=f"Test Prompt {i}",
             summary=f"Summary for test prompt {i}",
-            difficulty=difficulties[i % 3],
+
             worksWith=["Chrome", "Firefox", "Edge"][: (i % 3) + 1],
             tags=tag_sets[i % 5],
             targetSites=[f"site{i}.com"],
@@ -163,8 +163,10 @@ def admin_key():
 @pytest.fixture(scope="function")
 def user_credentials():
     """Generate unique user credentials for each test."""
+    unique_id = uuid.uuid4()
     return {
-        "email": f"user-{uuid.uuid4()}@example.com",
+        "email": f"user-{unique_id}@example.com",
+        "username": f"user_{str(unique_id)[:8]}",
         "password": "test-password-123",
     }
 

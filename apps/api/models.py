@@ -22,7 +22,7 @@ class Prompt(SQLModel, table=True):
 
     summary: str = Field()
 
-    difficulty: str = Field(max_length=20)
+
 
     # JSON fields for arrays - using SQLAlchemy Column with JSON type
     worksWith: list[str] = Field(

@@ -4,7 +4,7 @@ export interface Prompt {
   slug: string;
   title: string;
   summary: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
+
   worksWith: string[];
   tags: string[];
   targetSites: string[];

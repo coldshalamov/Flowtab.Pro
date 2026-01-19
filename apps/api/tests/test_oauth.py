@@ -88,6 +88,7 @@ def test_oauth_exchange_existing_email_requires_linking(
 
     existing = User(
         email="existing@example.com",
+        username="existinguser",
         hashed_password=get_password_hash("test-password-123"),
         is_active=True,
         is_superuser=False,

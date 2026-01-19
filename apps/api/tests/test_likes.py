@@ -9,7 +9,7 @@ def _create_prompt(client, auth_headers) -> dict:
         "slug": None,
         "title": "Flow Thread",
         "summary": "A thread for discussion",
-        "difficulty": "beginner",
+
         "worksWith": ["Chrome"],
         "tags": ["forum"],
         "targetSites": ["example.com"],

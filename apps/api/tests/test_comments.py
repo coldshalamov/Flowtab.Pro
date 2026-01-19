@@ -9,7 +9,7 @@ def _create_prompt(client, auth_headers) -> dict:
         "slug": None,
         "title": "Flow Thread",
         "summary": "A thread for discussion",
-        "difficulty": "beginner",
+
         "worksWith": ["Chrome"],
         "tags": ["forum"],
         "targetSites": ["example.com"],
@@ -70,7 +70,7 @@ def test_delete_comment_author_only(client, db_session, auth_headers, registered
     other_email = "other@example.com"
     other_password = "test-password-123"
     resp = client.post(
-        "/v1/auth/register", json={"email": other_email, "password": other_password}
+        "/v1/auth/register", json={"email": other_email, "username": "otheruser", "password": other_password}
     )
     assert resp.status_code == 201
 

@@ -63,14 +63,7 @@ export function PromptCard({ prompt }: { prompt: Prompt }) {
                         </div>
 
                         <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground/60">
-                            <div className="flex items-center gap-1" title="Difficulty">
-                                <span className={
-                                    prompt.difficulty === 'advanced' ? "text-primary" :
-                                        prompt.difficulty === 'intermediate' ? "text-foreground/70" : "text-muted-foreground"
-                                }>
-                                    {prompt.difficulty ? (prompt.difficulty.charAt(0).toUpperCase() + prompt.difficulty.slice(1)) : 'Simple'}
-                                </span>
-                            </div>
+
                             <div className="flex items-center gap-1">
                                 <Heart className="h-3 w-3" /> {prompt.like_count || 0}
                             </div>

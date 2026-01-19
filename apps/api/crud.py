@@ -83,7 +83,7 @@ def get_prompts(
     limit: int = 100,
     q: str | None = None,
     tags: list[str] | None = None,
-    difficulty: str | None = None,
+
     worksWith: list[str] | None = None,
 ) -> tuple[list[Prompt], int]:
     """
@@ -95,7 +95,7 @@ def get_prompts(
         limit: Maximum number of results to return
         q: Search query for text search across title, summary, and promptText
         tags: List of tags to filter by (AND logic - prompts must contain ALL specified tags)
-        difficulty: Difficulty level to filter by (exact match)
+
         worksWith: List of tools to filter by (OR logic - prompts must contain ANY specified tool)
 
     Returns:
@@ -116,8 +116,7 @@ def get_prompts(
         )
 
     # Apply difficulty filter (exact match)
-    if difficulty:
-        statement = statement.where(Prompt.difficulty == difficulty)
+
 
     # Apply tags filter (AND logic - prompts must contain ALL specified tags)
     if tags:
@@ -157,8 +156,7 @@ def get_prompts(
                 Prompt.promptText.ilike(search_pattern),
             )
         )
-    if difficulty:
-        count_statement = count_statement.where(Prompt.difficulty == difficulty)
+
     if tags:
         for tag in tags:
             escaped_tag = tag.replace('"', '""')
@@ -277,7 +275,7 @@ def create_prompt(
         slug=slug,
         title=prompt_create.title,
         summary=prompt_create.summary,
-        difficulty=prompt_create.difficulty,
+
         worksWith=prompt_create.worksWith or [],
         tags=prompt_create.tags or [],
         targetSites=prompt_create.targetSites or [],

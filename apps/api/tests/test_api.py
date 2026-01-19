@@ -47,7 +47,7 @@ def test_filter_by_tag(client, db_session):
         slug="git-workflow-prompt",
         title="Git Workflow Prompt",
         summary="A prompt for git workflow automation",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git", "workflow"],
         targetSites=["github.com"],
@@ -58,7 +58,7 @@ def test_filter_by_tag(client, db_session):
         slug="git-only-prompt",
         title="Git Only Prompt",
         summary="A prompt for git only",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git"],
         targetSites=["github.com"],
@@ -69,7 +69,7 @@ def test_filter_by_tag(client, db_session):
         slug="workflow-only-prompt",
         title="Workflow Only Prompt",
         summary="A prompt for workflow only",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["workflow"],
         targetSites=["example.com"],
@@ -90,62 +90,6 @@ def test_filter_by_tag(client, db_session):
     assert data["items"][0]["slug"] == "git-workflow-prompt"
 
 
-def test_filter_by_difficulty(client, db_session):
-    """
-    Test filtering prompts by difficulty level.
-
-    Verifies that:
-    - The API returns status 200
-    - Only prompts with the specified difficulty are returned
-    """
-    from apps.api.models import Prompt
-
-    # Seed prompts with different difficulties
-    prompt1 = Prompt(
-        slug="beginner-prompt",
-        title="Beginner Prompt",
-        summary="A beginner prompt",
-        difficulty="beginner",
-        worksWith=["Chrome"],
-        tags=["test"],
-        targetSites=["example.com"],
-        promptText="Test prompt text",
-        steps=["Step 1"],
-    )
-    prompt2 = Prompt(
-        slug="intermediate-prompt",
-        title="Intermediate Prompt",
-        summary="An intermediate prompt",
-        difficulty="intermediate",
-        worksWith=["Chrome"],
-        tags=["test"],
-        targetSites=["example.com"],
-        promptText="Test prompt text",
-        steps=["Step 1"],
-    )
-    prompt3 = Prompt(
-        slug="advanced-prompt",
-        title="Advanced Prompt",
-        summary="An advanced prompt",
-        difficulty="advanced",
-        worksWith=["Chrome"],
-        tags=["test"],
-        targetSites=["example.com"],
-        promptText="Test prompt text",
-        steps=["Step 1"],
-    )
-
-    db_session.add_all([prompt1, prompt2, prompt3])
-    db_session.commit()
-
-    response = client.get("/v1/prompts?difficulty=intermediate")
-
-    assert response.status_code == 200
-    data = response.json()
-
-    assert len(data["items"]) == 1
-    assert data["items"][0]["difficulty"] == "intermediate"
-    assert data["items"][0]["slug"] == "intermediate-prompt"
 
 
 def test_get_prompt_by_slug(client, db_session):
@@ -163,7 +107,7 @@ def test_get_prompt_by_slug(client, db_session):
         slug="test-get-prompt",
         title="Test Get Prompt",
         summary="A test prompt for getting by slug",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["test"],
         targetSites=["example.com"],
@@ -184,7 +128,7 @@ def test_get_prompt_by_slug(client, db_session):
     assert data["slug"] == "test-get-prompt"
     assert data["title"] == "Test Get Prompt"
     assert data["summary"] == "A test prompt for getting by slug"
-    assert data["difficulty"] == "beginner"
+
     assert data["worksWith"] == ["Chrome"]
     assert data["tags"] == ["test"]
     assert data["targetSites"] == ["example.com"]
@@ -229,7 +173,7 @@ def test_get_tags(client, db_session):
         slug="tags-prompt-1",
         title="Tags Prompt 1",
         summary="Prompt with tags",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git", "workflow", "automation"],
         targetSites=["example.com"],
@@ -240,7 +184,7 @@ def test_get_tags(client, db_session):
         slug="tags-prompt-2",
         title="Tags Prompt 2",
         summary="Prompt with overlapping tags",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git", "testing"],
         targetSites=["example.com"],
@@ -251,7 +195,7 @@ def test_get_tags(client, db_session):
         slug="tags-prompt-3",
         title="Tags Prompt 3",
         summary="Prompt with different tags",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["deployment", "ci-cd"],
         targetSites=["example.com"],
@@ -295,7 +239,7 @@ def test_create_prompt_authenticated_sets_author(
         slug="new-test-prompt",
         title="New Test Prompt",
         summary="A newly created test prompt",
-        difficulty="intermediate",
+
         worksWith=["Chrome", "Firefox"],
         tags=["new", "test"],
         targetSites=["example.com"],
@@ -316,7 +260,7 @@ def test_create_prompt_authenticated_sets_author(
     assert data["slug"] == "new-test-prompt"
     assert data["title"] == "New Test Prompt"
     assert data["summary"] == "A newly created test prompt"
-    assert data["difficulty"] == "intermediate"
+
     assert data["worksWith"] == ["Chrome", "Firefox"]
     assert data["tags"] == ["new", "test"]
     assert data["targetSites"] == ["example.com"]
@@ -334,7 +278,7 @@ def test_create_prompt_with_invalid_token(client, db_session):
     prompt_data = PromptCreate(
         title="Unauthorized Prompt",
         summary="This prompt should not be created",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["test"],
         targetSites=["example.com"],
@@ -360,7 +304,7 @@ def test_create_prompt_without_authentication(client, db_session):
     prompt_data = PromptCreate(
         title="No Admin Key Prompt",
         summary="This prompt should not be created",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["test"],
         targetSites=["example.com"],
@@ -395,7 +339,7 @@ def test_search_by_query(client, db_session):
         slug="search-test-1",
         title="Git Automation",
         summary="Automate git workflows",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["git"],
         targetSites=["github.com"],
@@ -406,7 +350,7 @@ def test_search_by_query(client, db_session):
         slug="search-test-2",
         title="Browser Testing",
         summary="Test browser applications",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["testing"],
         targetSites=["example.com"],
@@ -417,7 +361,7 @@ def test_search_by_query(client, db_session):
         slug="search-test-3",
         title="Deployment Scripts",
         summary="Deploy applications easily",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["deployment"],
         targetSites=["example.com"],
@@ -453,7 +397,7 @@ def test_filter_by_workswith(client, db_session):
         slug="workswith-chrome",
         title="Chrome Only",
         summary="Works with Chrome",
-        difficulty="beginner",
+
         worksWith=["Chrome"],
         tags=["test"],
         targetSites=["example.com"],
@@ -464,7 +408,7 @@ def test_filter_by_workswith(client, db_session):
         slug="workswith-firefox",
         title="Firefox Only",
         summary="Works with Firefox",
-        difficulty="beginner",
+
         worksWith=["Firefox"],
         tags=["test"],
         targetSites=["example.com"],
@@ -475,7 +419,7 @@ def test_filter_by_workswith(client, db_session):
         slug="workswith-edge",
         title="Edge Only",
         summary="Works with Edge",
-        difficulty="beginner",
+
         worksWith=["Edge"],
         tags=["test"],
         targetSites=["example.com"],

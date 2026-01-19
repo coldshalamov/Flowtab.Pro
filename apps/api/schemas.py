@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
@@ -32,9 +33,7 @@ class PromptCreate(BaseModel):
         min_length=1,
     )
 
-    difficulty: Literal["beginner", "intermediate", "advanced"] = Field(
-        description="Difficulty level of the prompt",
-    )
+
 
     worksWith: list[str] = Field(
         default_factory=list,
@@ -75,9 +74,7 @@ class PromptUpdate(BaseModel):
 
     title: str | None = Field(default=None, max_length=500)
     summary: str | None = Field(default=None)
-    difficulty: Literal["beginner", "intermediate", "advanced"] | None = Field(
-        default=None
-    )
+
     worksWith: list[str] | None = Field(default=None)
     tags: list[str] | None = Field(default=None)
     targetSites: list[str] | None = Field(default=None)
@@ -102,9 +99,7 @@ class PromptRead(BaseModel):
 
     summary: str = Field(description="Brief description of what the prompt does")
 
-    difficulty: Literal["beginner", "intermediate", "advanced"] = Field(
-        description="Difficulty level of the prompt",
-    )
+
 
     worksWith: list[str] = Field(
         description="List of compatible tools/browsers",
@@ -273,8 +268,9 @@ class UserCreate(UserBase):
     password: str = Field(description="User password", min_length=8)
 
 
-class UserRead(UserCreate):
+class UserRead(UserBase):
     id: str
+    email: str
     is_active: bool
     is_superuser: bool
     createdAt: datetime

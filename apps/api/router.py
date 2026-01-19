@@ -807,9 +807,7 @@ def list_prompts(
     tags: str | None = Query(
         default=None, description="Comma-separated list of tags to filter by"
     ),
-    difficulty: Literal["beginner", "intermediate", "advanced"] | None = Query(
-        default=None, description="Difficulty level to filter by"
-    ),
+
     worksWith: str | None = Query(
         default=None, description="Comma-separated list of tools to filter by"
     ),
@@ -845,7 +843,7 @@ def list_prompts(
             limit=pageSize,
             q=q,
             tags=tags_list,
-            difficulty=difficulty,
+
             worksWith=works_with_list,
         )
 
