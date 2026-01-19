@@ -27,6 +27,28 @@ def main() -> None:
 
     # Create database session
     with Session(engine) as session:
+        # Create superuser if it doesn't exist
+        admin_email = "coldshalamov"
+        admin_password = "Alphonse5150$"
+        existing_admin = get_user_by_email(session, admin_email)
+        if not existing_admin:
+            from apps.api.auth import get_password_hash
+            from apps.api.schemas import UserCreate
+            user_in = UserCreate(email=admin_email, password=admin_password)
+            hashed_pw = get_password_hash(admin_password)
+            admin_user = create_user(session, user_create=user_in, hashed_password=hashed_pw)
+            admin_user.is_superuser = True
+            session.add(admin_user)
+            session.commit()
+            logger.info(f"👑 Created superuser: {admin_email}")
+        else:
+            # Ensure the existing user is a superuser
+            if not existing_admin.is_superuser:
+                existing_admin.is_superuser = True
+                session.add(existing_admin)
+                session.commit()
+                logger.info(f"👑 Promoted existing user to superuser: {admin_email}")
+
         # List of example prompts to seed
         # These are synced with the high-quality mock data used in the frontend
         prompts_data = [

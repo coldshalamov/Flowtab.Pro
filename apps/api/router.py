@@ -18,6 +18,7 @@ from sqlmodel import Session, select
 
 from apps.api.schemas import (
     PromptCreate,
+    PromptUpdate,
     PromptRead,
     PromptListResponse,
     CommentCreate,
@@ -36,6 +37,7 @@ from apps.api.crud import (
     get_prompts,
     get_all_tags,
     create_prompt,
+    update_prompt,
     delete_prompt,
     get_user_by_email,
     create_user,
@@ -1313,6 +1315,46 @@ def delete_existing_prompt(
 
     except Exception:
         logger.exception("Unhandled error in DELETE /v1/prompts/{slug}")
+        return error_response(
+            error="Internal server error",
+            message="An unexpected error occurred.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+@router.patch(
+    "/prompts/{slug}",
+    response_model=PromptRead,
+    status_code=status.HTTP_200_OK,
+)
+def patch_existing_prompt(
+    slug: str,
+    prompt_update: PromptUpdate,
+    current_user: User = Depends(get_current_superuser),
+    session: Session = Depends(get_session),
+) -> PromptRead | JSONResponse:
+    """
+    Update an existing prompt by slug.
+
+    Requires Superuser privileges.
+
+    Returns the updated prompt.
+    """
+    try:
+        prompt = get_prompt_by_slug(session=session, slug=slug)
+
+        if prompt is None:
+            return error_response(
+                error="Not found",
+                message=f"Prompt with slug '{slug}' not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        updated_prompt = update_prompt(
+            session=session, prompt=prompt, prompt_update=prompt_update
+        )
+        return updated_prompt
+
+    except Exception:
+        logger.exception("Unhandled error in PATCH /v1/prompts/{slug}")
         return error_response(
             error="Internal server error",
             message="An unexpected error occurred.",

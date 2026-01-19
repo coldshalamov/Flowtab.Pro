@@ -278,6 +278,34 @@ def create_prompt(
     return prompt
 
 
+def update_prompt(
+    session: Session, prompt: Prompt, prompt_update: Any
+) -> Prompt:
+    """
+    Update an existing prompt with data from PromptUpdate schema.
+
+    Args:
+        session: SQLAlchemy database session
+        prompt: The existing prompt object to update
+        prompt_update: Pydantic schema with update data
+
+    Returns:
+        The updated prompt
+    """
+    update_data = prompt_update.dict(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(prompt, field, value)
+
+    prompt.updatedAt = datetime.utcnow()
+
+    session.add(prompt)
+    session.commit()
+    session.refresh(prompt)
+
+    return prompt
+
+
 def get_comments_for_prompt(session: Session, prompt_id: str) -> list[Comment]:
     statement = (
         select(Comment)

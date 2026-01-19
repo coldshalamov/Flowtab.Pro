@@ -67,6 +67,25 @@ class PromptCreate(BaseModel):
     )
 
 
+class PromptUpdate(BaseModel):
+    """
+    Schema for updating an existing prompt.
+    All fields are optional.
+    """
+
+    title: str | None = Field(default=None, max_length=500)
+    summary: str | None = Field(default=None)
+    difficulty: Literal["beginner", "intermediate", "advanced"] | None = Field(
+        default=None
+    )
+    worksWith: list[str] | None = Field(default=None)
+    tags: list[str] | None = Field(default=None)
+    targetSites: list[str] | None = Field(default=None)
+    promptText: str | None = Field(default=None)
+    steps: list[str] | None = Field(default=None)
+    notes: str | None = Field(default=None)
+
+
 class PromptRead(BaseModel):
     """
     Schema for reading a prompt.
