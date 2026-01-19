@@ -28,174 +28,230 @@ def main() -> None:
     # Create database session
     with Session(engine) as session:
         # List of example prompts to seed
+        # These are synced with the high-quality mock data used in the frontend
         prompts_data = [
-            # Required prompts
             PromptCreate(
-                slug="auto-merge-preview-branches",
-                title="Auto-merge preview branches to avoid stale Jules edits",
-                summary="Automatically merge preview branches to keep Jules edits fresh and avoid conflicts",
-                difficulty="intermediate",
-                worksWith=["GitHub", "Git", "CI/CD"],
-                tags=["git", "workflow", "automation", "merge", "preview"],
-                targetSites=["github.com"],
-                promptText="Automatically merge preview branches when all checks pass to prevent stale Jules edits and maintain a clean development workflow.",
-                steps=[
-                    "Navigate to the repository's Actions tab",
-                    "Configure a workflow to trigger on pull request updates",
-                    "Set up conditional merge rules based on check status",
-                    "Enable auto-merge for preview branches only",
-                    "Monitor merge results in the Actions log",
-                ],
-                notes="Only use for preview branches, not main or production branches.",
-            ),
-            PromptCreate(
-                slug="resolve-github-conflict-markers",
-                title="Resolve GitHub conflict markers via DOM-copy workflow",
-                summary="Step-by-step workflow to resolve merge conflicts by copying DOM elements from the conflicting version",
+                slug="resolve-github-merge-conflicts",
+                title="GitHub Conflict Resolution Shortcut",
+                summary="Resolve all merge conflicts in one file as fast as possible by reading the full text via DOM, resolving intelligently, and pasting back the complete solution.",
                 difficulty="advanced",
-                worksWith=["GitHub", "VS Code", "Git"],
-                tags=["git", "conflict-resolution", "workflow", "advanced"],
+                worksWith=[],
+                tags=["featured", "dev", "github"],
                 targetSites=["github.com"],
-                promptText="Resolve GitHub merge conflict markers by using a DOM-copy workflow that preserves the correct changes while maintaining file integrity.",
+                promptText="""## **GitHub Conflict Resolution Shortcut - Optimized for Speed**
+
+**Objective:** Resolve all merge conflicts in one file as fast as possible by reading the full text via DOM, resolving intelligently, and pasting back the complete solution.
+
+***
+
+### **Step 1: Extract the full conflicting file**
+
+1. Locate the GitHub conflict editor (the editable code area showing the file).
+2. Use `get_page_text` or `read_page` to extract the **entire file content** including all conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).
+3. **Do NOT scroll, screenshot, or click individual "Accept current/incoming change" buttons.** Work entirely from the extracted text.
+
+***
+
+### **Step 2: Understand the codebase context**
+
+This is a **React + wagmi + viem** project. The conflicts typically occur in React hooks, state declarations, and imports.
+
+**Key principle:** Both branches usually add valid functionality. Your job is to **combine compatible changes** rather than discarding one side unless they're mutually exclusive.
+
+***
+
+### **Step 3: Resolve each conflict region intelligently**
+
+For each conflict block:
+
+```
+<<<<<<< branch-a
+current version
+=======
+incoming version
+>>>>>>> branch-b
+```
+
+**Resolution rules:**
+
+1. **Identical lines with different comments:** Keep the line once, preserve the more descriptive comment.
+2. **New state variables or hooks:** If one branch adds a new `useState` or hook that doesn't conflict with existing code, **keep it**.
+3. **Import changes:** Merge all unique imports from both sides. Remove duplicates.
+4. **Logic changes:** If both sides modify the same function or JSX, analyze which change is more complete or combines both intents.
+
+***
+
+### **Step 4: Construct the resolved file**
+
+- Remove **all** conflict markers.
+- Ensure the file is valid JavaScript/TypeScript with correct syntax.
+- Maintain consistent style (2-space indentation, single quotes).
+
+***
+
+### **Step 5: Replace editor content in one shot**
+
+1. Select all text in the GitHub conflict editor (ctrl+a).
+2. Paste the **entire resolved file** content.
+3. **Self-check:** No markers remain, imports are correct, syntax is valid.
+
+***
+
+### **Step 6: Mark as resolved and complete the merge**
+
+1. Click **"Mark as resolved"** button.
+2. You'll be returned to the PR page automatically.
+3. Click **"Merge PR"** or **"Squash and merge"** to complete.
+
+**Do NOT commit prematurely.** Ensure all conflicts in all files are resolved first.""",
                 steps=[
-                    "Open the conflicted file in GitHub's web interface",
-                    "Identify the conflict markers (<<<<<<<, =======, >>>>>>>)",
-                    "Review both sides of the conflict",
-                    "Copy the desired content using DOM inspection tools",
-                    "Paste the resolved content into your local editor",
-                    "Remove all conflict markers",
-                    "Stage and commit the resolved file",
+                    "Extract full conflicting file via DOM",
+                    "Contextualize & resolve regions",
+                    "Construct resolved file in memory",
+                    "Replace editor content & mark resolved"
                 ],
-                notes="Always verify the resolved file before committing to ensure no unintended changes were introduced.",
+                notes="Both branches usually add valid functionality. Combine compatible changes rather than discarding one side.",
             ),
             PromptCreate(
-                slug="rendercom-deploy-api-key-wiring",
-                title="Render.com deploy + API key wiring checklist",
-                summary="Complete checklist for deploying to Render.com and properly wiring API keys",
-                difficulty="intermediate",
-                worksWith=["Render.com", "GitHub", "CLI"],
-                tags=["deployment", "render", "api-keys", "checklist"],
-                targetSites=["render.com", "github.com"],
-                promptText="A comprehensive checklist for deploying applications to Render.com and ensuring all API keys are properly configured and wired.",
-                steps=[
-                    "Create a new web service on Render.com",
-                    "Connect your GitHub repository",
-                    "Configure build and start commands",
-                    "Add all required environment variables in Render dashboard",
-                    "Verify API key format and encoding",
-                    "Test API key access in the deployed application",
-                    "Set up automatic deployments on push to main",
-                    "Monitor deployment logs for any configuration issues",
-                ],
-                notes="Keep a secure backup of all API keys in a password manager.",
-            ),
-            PromptCreate(
-                slug="playwright-mcp-stable-selectors",
-                title="Playwright MCP: stable selectors + retry strategy",
-                summary="Best practices for creating stable selectors and implementing retry strategies in Playwright MCP",
-                difficulty="advanced",
-                worksWith=["Playwright", "MCP", "VS Code"],
-                tags=["playwright", "mcp", "selectors", "testing", "retry"],
-                targetSites=["playwright.dev", "github.com"],
-                promptText="Implement stable selectors and robust retry strategies in Playwright MCP to ensure reliable browser automation across different environments.",
-                steps=[
-                    "Use data-testid attributes for element identification",
-                    "Prefer role-based selectors over CSS classes",
-                    "Implement explicit waits with reasonable timeouts",
-                    "Add retry logic with exponential backoff",
-                    "Log selector failures for debugging",
-                    "Test selectors across different browsers",
-                    "Use locator assertions for better error messages",
-                ],
-                notes="Avoid using auto-generated IDs or dynamic class names as selectors.",
-            ),
-            # Additional example prompts
-            PromptCreate(
-                slug="automated-pr-review-checklist",
-                title="Automated PR review checklist with diff analysis",
-                summary="Automated pull request review process that analyzes diffs and checks against a predefined checklist",
-                difficulty="intermediate",
-                worksWith=["GitHub", "Git", "CI/CD"],
-                tags=["pr-review", "automation", "code-quality", "checklist"],
-                targetSites=["github.com"],
-                promptText="Automatically review pull requests by analyzing code diffs and checking against a comprehensive quality checklist.",
-                steps=[
-                    "Trigger the review bot on PR creation or update",
-                    "Fetch the diff between base and head branches",
-                    "Analyze changed files for common issues",
-                    "Check against style guide and linting rules",
-                    "Verify test coverage for new code",
-                    "Review documentation updates",
-                    "Post review comments as GitHub checks",
-                    "Block merge if critical issues are found",
-                ],
-                notes="Customize the checklist based on your team's specific requirements.",
-            ),
-            PromptCreate(
-                slug="local-environment-setup-nextjs-fastapi",
-                title="Local environment setup for Next.js + FastAPI monorepo",
-                summary="Step-by-step guide for setting up a local development environment with Next.js frontend and FastAPI backend",
+                slug="amazon-price-tracker",
+                title="Amazon Price Drop Alert",
+                summary="Monitor any Amazon product page and get notified when the price drops below your target threshold.",
                 difficulty="beginner",
-                worksWith=["Node.js", "Python", "VS Code", "Docker"],
-                tags=["setup", "nextjs", "fastapi", "monorepo", "development"],
-                targetSites=["nextjs.org", "fastapi.tiangolo.com"],
-                promptText="Complete local development environment setup for a monorepo containing Next.js frontend and FastAPI backend applications.",
+                worksWith=[],
+                tags=["featured", "shopping", "monitoring"],
+                targetSites=["amazon.com"],
+                promptText="""## Amazon Price Drop Alert
+
+**Objective:** Continuously monitor a product's price and trigger an alert when it drops.
+
+### Steps:
+1. Navigate to the Amazon product URL provided
+2. Extract the current price from the buy box
+3. Compare against the target threshold
+4. If below threshold: Send notification via webhook
+5. If above: Log the price and schedule next check
+
+### Exit Condition:
+Price drops below target OR monitoring period expires.""",
                 steps=[
-                    "Clone the repository to your local machine",
-                    "Install Node.js version 18 or higher",
-                    "Install Python 3.10 or higher",
-                    "Navigate to the frontend directory and run npm install",
-                    "Navigate to the backend directory and create a virtual environment",
-                    "Activate the virtual environment and install Python dependencies",
-                    "Copy .env.example files and configure environment variables",
-                    "Start the FastAPI backend with uvicorn",
-                    "Start the Next.js frontend with npm run dev",
-                    "Verify both services are running and communicating",
+                    "Open product page",
+                    "Extract current price",
+                    "Compare to threshold",
+                    "Send alert if triggered"
                 ],
-                notes="Use Docker Compose for an easier setup if available.",
+                notes="Set up a webhook endpoint to receive price alerts. Works with Slack, Discord, or email integrations.",
             ),
             PromptCreate(
-                slug="docker-compose-development-workflow",
-                title="Docker Compose development workflow",
-                summary="Efficient development workflow using Docker Compose for multi-container applications",
+                slug="linkedin-auto-apply",
+                title="LinkedIn Easy Apply Automation",
+                summary="Automatically apply to jobs matching your criteria using LinkedIn's Easy Apply feature.",
                 difficulty="intermediate",
-                worksWith=["Docker", "Docker Compose", "VS Code"],
-                tags=["docker", "development", "workflow", "containers"],
-                targetSites=["docs.docker.com"],
-                promptText="Streamline your development workflow with Docker Compose for managing multi-container applications with hot-reload and volume mounting.",
+                worksWith=[],
+                tags=["featured", "outreach", "jobs"],
+                targetSites=["linkedin.com"],
+                promptText="""## LinkedIn Easy Apply Automation
+
+**Objective:** Streamline job applications by automating Easy Apply submissions.
+
+### Pre-requisites:
+- Logged into LinkedIn
+- Resume uploaded to profile
+- Search filters pre-configured
+
+### Steps:
+1. Navigate to Jobs with Easy Apply filter
+2. For each job listing:
+   - Click "Easy Apply"
+   - Fill any required fields from profile data
+   - Submit application
+   - Log the job title and company
+3. Move to next listing
+4. Stop after N applications or end of results
+
+### Safety:
+- Add 5-10 second delays between applications
+- Skip listings requiring additional questions""",
                 steps=[
-                    "Create a docker-compose.yml file in your project root",
-                    "Define services for your application, database, and other dependencies",
-                    "Configure volume mounts for hot-reload during development",
-                    "Set up environment variables in the compose file",
-                    "Create a Dockerfile for each service with development optimizations",
-                    "Use docker-compose up to start all services",
-                    "Use docker-compose logs to monitor service output",
-                    "Use docker-compose down to stop and clean up services",
+                    "Search for matching jobs",
+                    "Click Easy Apply",
+                    "Auto-fill application",
+                    "Submit and log",
+                    "Move to next"
                 ],
-                notes="Use .dockerignore files to exclude unnecessary files from build context.",
+                notes="Use responsibly. LinkedIn may rate-limit or flag automated activity.",
             ),
             PromptCreate(
-                slug="database-migration-testing-strategy",
-                title="Database migration testing strategy",
-                summary="Comprehensive strategy for testing database migrations safely before production deployment",
-                difficulty="advanced",
-                worksWith=["Alembic", "PostgreSQL", "Docker", "CI/CD"],
-                tags=["database", "migration", "testing", "alembic", "postgresql"],
-                targetSites=["alembic.sqlalchemy.org", "postgresql.org"],
-                promptText="A thorough testing strategy for database migrations that ensures data integrity and minimal downtime during production deployments.",
+                slug="google-sheets-web-scraper",
+                title="Web Scrape to Google Sheets",
+                summary="Extract structured data from any webpage and append it directly to a Google Sheet.",
+                difficulty="intermediate",
+                worksWith=[],
+                tags=["featured", "scraping", "automation"],
+                targetSites=["sheets.google.com"],
+                promptText="""## Web Scrape to Google Sheets
+
+**Objective:** Scrape data from a target page and write it to Google Sheets.
+
+### Inputs:
+- Target URL to scrape
+- CSS selectors for data points
+- Google Sheet URL
+
+### Steps:
+1. Navigate to target URL
+2. Extract data using provided selectors
+3. Format as row data
+4. Navigate to Google Sheet
+5. Append row to sheet
+6. Confirm write successful
+
+### Tips:
+- Use browser DevTools to find selectors
+- Test selectors on a single item first""",
                 steps=[
-                    "Create a new migration with alembic revision",
-                    "Write the upgrade and downgrade SQL changes",
-                    "Test migration on a fresh local database",
-                    "Verify data integrity after migration",
-                    "Test the downgrade path to ensure reversibility",
-                    "Run migration on a staging environment with production-like data",
-                    "Perform performance testing on large datasets",
-                    "Create a rollback plan before production deployment",
-                    "Monitor database metrics during production migration",
+                    "Load target page",
+                    "Query selectors",
+                    "Extract text content",
+                    "Open Google Sheet",
+                    "Append new row"
                 ],
-                notes="Always have a recent backup before running migrations in production.",
+                notes="Requires Google login. Sheet must be editable by your account.",
+            ),
+            PromptCreate(
+                slug="twitter-thread-unroller",
+                title="Twitter Thread to Markdown",
+                summary="Convert any Twitter/X thread into a clean, readable Markdown document.",
+                difficulty="beginner",
+                worksWith=[],
+                tags=["featured", "social", "productivity"],
+                targetSites=["twitter.com", "x.com"],
+                promptText="""## Twitter Thread to Markdown
+
+**Objective:** Capture an entire thread and format it as Markdown.
+
+### Steps:
+1. Navigate to the first tweet in the thread
+2. Scroll to load all replies from the author
+3. Extract tweet text, images, and timestamps
+4. Format as Markdown with proper headings
+5. Copy to clipboard or save to file
+
+### Output Format:
+# Thread by @username
+
+> Tweet 1 content
+
+> Tweet 2 content
+
+...""",
+                steps=[
+                    "Open thread URL",
+                    "Scroll to load all tweets",
+                    "Filter author's tweets only",
+                    "Format as Markdown",
+                    "Output to clipboard"
+                ],
+                notes="Works best on public threads. May need login for protected accounts.",
             ),
         ]
 
@@ -213,7 +269,23 @@ def main() -> None:
                 skipped_count += 1
             else:
                 # Create the prompt
-                create_prompt(session, prompt_data)
+                prompt = create_prompt(session, prompt_data)
+                
+                # Mock like counts for initial quality seeding
+                if prompt.slug == "resolve-github-merge-conflicts":
+                    prompt.like_count = 19
+                elif prompt.slug == "linkedin-auto-apply":
+                    prompt.like_count = 18
+                elif prompt.slug == "google-sheets-web-scraper":
+                    prompt.like_count = 16
+                elif prompt.slug == "amazon-price-tracker":
+                    prompt.like_count = 14
+                elif prompt.slug == "twitter-thread-unroller":
+                    prompt.like_count = 7
+                
+                session.add(prompt)
+                session.commit()
+                
                 logger.info(f"  ✅ Created prompt: {prompt_data.slug}")
                 created_count += 1
 
@@ -226,3 +298,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

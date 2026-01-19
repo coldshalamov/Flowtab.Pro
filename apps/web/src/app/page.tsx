@@ -74,7 +74,7 @@ export default async function Home() {
         {/* Minimal Tech Stack */}
         <div className="mt-24 w-full relative z-10 animate-in fade-in duration-1000 delay-500">
           <div className="flex flex-col items-center gap-4 text-center px-4">
-            <div className="flex flex-col gap-48">
+            <div className="flex flex-col gap-24">
               <span className="text-3xl font-bold tracking-tight text-white">Pick your Flowbot.</span>
               <p className="text-xl md:text-2xl font-bold uppercase tracking-widest text-zinc-300">Works with:</p>
             </div>
