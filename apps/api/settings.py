@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     facebook_client_id: str | None = None
     facebook_client_secret: str | None = None
 
+    # Stripe settings
+    stripe_secret_key: str | None = None
+    stripe_webhook_secret: str | None = None
+
     # Exact-match allowlist of redirect URIs we will accept in OAuth flows.
     # Comma-separated list.
     # NOTE: exact-match allowlist. Include dev callback routes here.

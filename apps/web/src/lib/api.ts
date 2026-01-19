@@ -92,6 +92,10 @@ export async function fetchPrompts(
       }
     }
 
+    if (params.type) {
+      filtered = filtered.filter((p) => p.type === params.type);
+    }
+
     return {
       items: filtered,
       page: 1,
