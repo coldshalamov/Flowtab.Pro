@@ -21,6 +21,9 @@ class Prompt(SQLModel, table=True):
     title: str = Field(max_length=500)
 
     summary: str = Field()
+    
+    # Type: 'prompt' or 'discussion'
+    type: str = Field(default="prompt", index=True, max_length=20)
 
 
 
@@ -68,6 +71,11 @@ class Prompt(SQLModel, table=True):
     )
 
     like_count: int = Field(default=0, description="Number of likes")
+    saves_count: int = Field(default=0, description="Number of bookmarks")
+    
+    # Marketplace fields
+    price: int = Field(default=0, description="Price in cents (0 = free)")
+    currency: str = Field(default="usd", max_length=3)
 
 
 class OAuthAccount(SQLModel, table=True):
@@ -179,3 +187,47 @@ class User(SQLModel, table=True):
         default_factory=datetime.utcnow, description="Creation timestamp"
     )
     comments: list["Comment"] = Relationship(back_populates="author")
+    
+    # Marketplace fields
+    stripe_connect_id: str | None = Field(default=None, index=True, description="Stripe Connect Account ID")
+    is_seller: bool = Field(default=False, description="Whether the user has enabled selling")
+
+
+class Save(SQLModel, table=True):
+    """A user's bookmark of a prompt."""
+    
+    __tablename__ = "saves"
+    __table_args__ = (
+        UniqueConstraint("user_id", "prompt_id", name="uq_save_user_prompt"),
+    )
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+    user_id: str = Field(foreign_key="users.id", index=True)
+    prompt_id: str = Field(foreign_key="prompts.id", index=True)
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+
+
+class Purchase(SQLModel, table=True):
+    """Record of a prompt purchase."""
+    
+    __tablename__ = "purchases"
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+    buyer_id: str = Field(foreign_key="users.id", index=True)
+    seller_id: str = Field(foreign_key="users.id", index=True)
+    prompt_id: str = Field(foreign_key="prompts.id", index=True)
+    
+    amount_cents: int = Field(description="Total amount charged in cents")
+    platform_fee_cents: int = Field(description="Fee taken by platform in cents")
+    currency: str = Field(default="usd", max_length=3)
+    
+    stripe_payment_intent_id: str = Field(index=True)
+    status: str = Field(default="pending", index=True) # pending, paid, failed, refunded
+    
+    createdAt: datetime = Field(default_factory=datetime.utcnow)

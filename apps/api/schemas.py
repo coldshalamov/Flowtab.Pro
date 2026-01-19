@@ -54,6 +54,11 @@ class PromptCreate(BaseModel):
         description="The actual prompt text to be used",
         min_length=1,
     )
+    
+    type: Literal["prompt", "discussion"] = Field(
+        default="prompt",
+        description="Type of content: 'prompt' or 'discussion'",
+    )
 
     steps: list[str] = Field(
         default_factory=list,
@@ -63,6 +68,12 @@ class PromptCreate(BaseModel):
     notes: str = Field(
         default="",
         description="Additional notes or warnings",
+    )
+
+    price: int = Field(
+        default=0,
+        description="Price in cents (0 = free)",
+        ge=0,
     )
 
 
@@ -81,6 +92,7 @@ class PromptUpdate(BaseModel):
     promptText: str | None = Field(default=None)
     steps: list[str] | None = Field(default=None)
     notes: str | None = Field(default=None)
+    price: int | None = Field(default=None, ge=0)
 
 
 class PromptRead(BaseModel):
@@ -98,6 +110,8 @@ class PromptRead(BaseModel):
     title: str = Field(description="Human-readable title of the prompt")
 
     summary: str = Field(description="Brief description of what the prompt does")
+    
+    type: str = Field(description="Type of content")
 
 
 
@@ -142,6 +156,21 @@ class PromptRead(BaseModel):
     like_count: int = Field(
         default=0,
         description="Number of likes",
+    )
+
+    saves_count: int = Field(
+        default=0,
+        description="Number of bookmarks",
+    )
+
+    price: int = Field(
+        default=0,
+        description="Price in cents",
+    )
+
+    currency: str = Field(
+        default="usd",
+        description="Currency code",
     )
 
     class Config:

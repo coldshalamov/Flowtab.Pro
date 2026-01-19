@@ -811,6 +811,9 @@ def list_prompts(
     worksWith: str | None = Query(
         default=None, description="Comma-separated list of tools to filter by"
     ),
+    type: Literal["prompt", "discussion"] | None = Query(
+        default=None, description="Type of content"
+    ),
     page: int = Query(default=1, ge=1, description="Page number"),
     pageSize: int = Query(
         default=20, ge=1, le=100, description="Number of items per page"
@@ -843,7 +846,7 @@ def list_prompts(
             limit=pageSize,
             q=q,
             tags=tags_list,
-
+            type_=type,
             worksWith=works_with_list,
         )
 
@@ -1377,3 +1380,158 @@ def patch_existing_prompt(
             message="An unexpected error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+@router.put(
+    "/prompts/{slug}/save",
+    response_model=LikeStatusResponse,
+    status_code=status.HTTP_200_OK,
+)
+def save_prompt_endpoint(
+    slug: str,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+) -> LikeStatusResponse | JSONResponse:
+    """Bookmark (save) a prompt."""
+    prompt = get_prompt_by_slug(session=session, slug=slug)
+    if not prompt:
+        return error_response(
+            error="Not found",
+            message=f"Prompt '{slug}' not found",
+            status_code=404,
+        )
+
+    # Use 'save_prompt' from crud (ensure it is imported)
+    from apps.api.crud import save_prompt as crud_save_prompt
+    
+    was_saved = crud_save_prompt(session=session, user_id=current_user.id, prompt_id=prompt.id)
+    if was_saved:
+        prompt.saves_count += 1
+        session.add(prompt)
+        session.commit()
+    
+    return {"liked": True, "likeCount": prompt.saves_count}
+
+
+@router.delete(
+    "/prompts/{slug}/save",
+    response_model=LikeStatusResponse,
+    status_code=status.HTTP_200_OK,
+)
+def unsave_prompt_endpoint(
+    slug: str,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+) -> LikeStatusResponse | JSONResponse:
+    """Remove bookmark (unsave) from a prompt."""
+    prompt = get_prompt_by_slug(session=session, slug=slug)
+    if not prompt:
+        return error_response(
+            error="Not found",
+            message=f"Prompt '{slug}' not found",
+            status_code=404,
+        )
+        
+    from apps.api.crud import unsave_prompt as crud_unsave_prompt
+    
+    was_unsaved = crud_unsave_prompt(session=session, user_id=current_user.id, prompt_id=prompt.id)
+    if was_unsaved:
+        prompt.saves_count = max(0, prompt.saves_count - 1)
+        session.add(prompt)
+        session.commit()
+    
+    return {"liked": False, "likeCount": prompt.saves_count}
+
+
+# --- Stripe / Marketplace Endpoints ---
+
+@router.post("/stripe/connect", tags=["marketplace"])
+def connect_stripe_account(
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+) -> dict | JSONResponse:
+    """Create a Stripe Express account for the user and return onboarding link."""
+    if not settings.stripe_secret_key:
+         return error_response(
+            error="Server misconfigured",
+            message="Stripe is not configured on this server.",
+            status_code=500
+        )
+
+    from apps.api.stripe_utils import stripe_client
+    
+    # Create account if doesn't exist
+    if not current_user.stripe_connect_id:
+        try:
+            account = stripe_client.create_account(current_user.email)
+            current_user.stripe_connect_id = account.id
+            session.add(current_user)
+            session.commit()
+            session.refresh(current_user)
+        except Exception as e:
+            return error_response(error="Stripe Error", message=str(e), status_code=500)
+    
+    # Generate link
+    try:
+        # TODO: Update return URLs to real frontend routes
+        link = stripe_client.create_account_link(
+            account_id=current_user.stripe_connect_id,
+            refresh_url=f"{settings.cors_origins_list[0]}/settings?stripe=refresh",
+            return_url=f"{settings.cors_origins_list[0]}/settings?stripe=return",
+        )
+        return {"url": link.url}
+    except Exception as e:
+            return error_response(error="Stripe Error", message=str(e), status_code=500)
+
+@router.post("/prompts/{slug}/buy", tags=["marketplace"])
+def buy_prompt(
+    slug: str,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+) -> dict | JSONResponse:
+    """Create a payment intent to purchase a prompt."""
+    if not settings.stripe_secret_key:
+         return error_response(
+            error="Server misconfigured",
+            message="Stripe is not configured on this server.",
+            status_code=500
+        )
+        
+    prompt = get_prompt_by_slug(session=session, slug=slug)
+    if not prompt:
+        return error_response(error="Not found", message="Prompt not found", status_code=404)
+        
+    if prompt.price <= 0:
+        return error_response(error="Bad Request", message="This prompt is free.", status_code=400)
+        
+    seller = session.get(User, prompt.author_id)
+    if not seller or not seller.stripe_connect_id:
+         return error_response(error="d", message="Seller not setup for payments.", status_code=400)
+         
+    # Check if already purchased
+    # existing = session.exec(select(Purchase).where(Purchase.buyer_id == current_user.id, Purchase.prompt_id == prompt.id)).first()
+    # if existing: ... (Optional: allow re-purchase or block)
+
+    # Calculate 10% fee
+    platform_fee = int(prompt.price * 0.10)
+    
+    from apps.api.stripe_utils import stripe_client
+    try:
+        intent = stripe_client.create_payment_intent(
+            amount_cents=prompt.price,
+            currency=prompt.currency,
+            seller_account_id=seller.stripe_connect_id,
+            platform_fee_cents=platform_fee
+        )
+        
+        # Record pending purchase? Or wait for webhook?
+        # Typically we wait for webhook, but we can store intent ID to verify later.
+        
+        return {
+            "clientSecret": intent.client_secret,
+            "publishableKey": "pk_test_placeholder", # TODO: Add to settings if needed
+            "amount": prompt.price,
+            "currency": prompt.currency
+        }
+    except Exception as e:
+        return error_response(error="Stripe Error", message=str(e), status_code=500)

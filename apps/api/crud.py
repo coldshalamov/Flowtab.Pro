@@ -83,7 +83,7 @@ def get_prompts(
     limit: int = 100,
     q: str | None = None,
     tags: list[str] | None = None,
-
+    type_: str | None = None,
     worksWith: list[str] | None = None,
 ) -> tuple[list[Prompt], int]:
     """
@@ -116,6 +116,10 @@ def get_prompts(
         )
 
     # Apply difficulty filter (exact match)
+    
+    # Apply type filter
+    if type_:
+        statement = statement.where(Prompt.type == type_)
 
 
     # Apply tags filter (AND logic - prompts must contain ALL specified tags)
@@ -155,7 +159,11 @@ def get_prompts(
                 Prompt.summary.ilike(search_pattern),
                 Prompt.promptText.ilike(search_pattern),
             )
+            )
         )
+
+    if type_:
+        count_statement = count_statement.where(Prompt.type == type_)
 
     if tags:
         for tag in tags:
@@ -282,6 +290,8 @@ def create_prompt(
         promptText=prompt_create.promptText,
         steps=prompt_create.steps or [],
         notes=prompt_create.notes if prompt_create.notes else None,
+        price=prompt_create.price or 0,
+        type=prompt_create.type,
         author_id=author_id,
     )
 
@@ -408,3 +418,36 @@ def delete_prompt(session: Session, prompt: Prompt) -> None:
     """
     session.delete(prompt)
     session.commit()
+
+
+from apps.api.models import Save
+
+def get_save(session: Session, *, user_id: str, prompt_id: str) -> Save | None:
+    statement = select(Save).where(
+        Save.user_id == user_id,
+        Save.prompt_id == prompt_id,
+    )
+    return session.exec(statement).first()
+
+
+def save_prompt(session: Session, *, user_id: str, prompt_id: str) -> bool:
+    """Ensure a bookmark (save) exists. Returns True if a new save was created."""
+    save = Save(user_id=user_id, prompt_id=prompt_id)
+    session.add(save)
+    try:
+        session.commit()
+        return True
+    except IntegrityError:
+        session.rollback()
+        return False
+
+
+def unsave_prompt(session: Session, *, user_id: str, prompt_id: str) -> bool:
+    """Ensure a bookmark (save) is removed. Returns True if removed."""
+    save = get_save(session, user_id=user_id, prompt_id=prompt_id)
+    if not save:
+        return False
+
+    session.delete(save)
+    session.commit()
+    return True
