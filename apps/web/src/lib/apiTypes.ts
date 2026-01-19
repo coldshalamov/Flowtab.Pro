@@ -15,6 +15,7 @@ export interface Prompt {
   createdAt: string; // ISO
   updatedAt: string; // ISO
   like_count?: number;
+  savesCount?: number;
 }
 
 export interface Comment {

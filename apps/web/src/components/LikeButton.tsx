@@ -85,7 +85,7 @@ export function LikeButton(props: {
       size={size}
       onClick={toggle}
       aria-label={label}
-      className={className}
+      className={`${className} transition-transform active:scale-95 duration-150`}
       disabled={isSaving}
     >
       <Heart className={"h-4 w-4" + (liked ? " fill-current" : "")} />

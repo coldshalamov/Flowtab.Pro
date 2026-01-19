@@ -26,28 +26,51 @@ export default async function LibraryPage(props: {
         page: 1, pageSize: 20
     });
 
+    const { items: featuredPrompts } = await fetchPrompts({
+        page: 1, pageSize: 3, tags: 'featured'
+    });
+
     const availableTags = await fetchTags();
 
     return (
         <div className="relative min-h-screen bg-background">
             <div className="container relative z-10 py-16 md:py-24 max-w-screen-2xl mx-auto px-6">
-                <div className="flex flex-col gap-4 mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
-                    <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-6 mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
+                    <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-8 bg-primary" />
                             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground uppercase">
-                                Library // <span className="text-muted-foreground/40">{total}</span>
+                                LIBRARY
                             </h1>
                         </div>
-                        <Link href="/submit" className="hidden md:block">
-                            <Button size="lg" className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-bold uppercase tracking-wider px-8 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]">
-                                Submit Prompt <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
+                        <p className="text-xl md:text-2xl font-medium text-foreground/90 ml-5">
+                            Browse Flows. Copy. Run. Iterate.
+                        </p>
+                        <p className="text-sm font-medium text-muted-foreground/60 ml-5">
+                            Runner-agnostic workflows for browser-based agents.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Featured Flows Strip */}
+                <div className="mb-16 space-y-6">
+                    <div className="flex items-center justify-between border-b border-border/40 pb-4">
+                        <h2 className="text-lg font-semibold tracking-tight text-foreground">Featured Flows</h2>
+                        <Link href="/library?tags=featured" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                            View all
                         </Link>
                     </div>
-                    <p className="text-sm font-semibold text-muted-foreground/60 tracking-widest uppercase ml-5">
-                        Prompt Repositories Synchronized
-                    </p>
+                    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                        {featuredPrompts.map((p: Prompt) => (
+                            <PromptCard key={`featured-${p.id}`} prompt={p} />
+                        ))}
+                        {/* Fallback if no featured prompts found, to ensure strip exists as requested */}
+                        {featuredPrompts.length === 0 && (
+                            <div className="col-span-full py-8 text-center text-muted-foreground text-sm">
+                                Loading featured flows...
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-12">
@@ -63,13 +86,35 @@ export default async function LibraryPage(props: {
                                 <PromptCard key={p.id} prompt={p} />
                             ))
                         ) : (
-                            <div className="col-span-full py-40 text-center border-2 border-dashed border-border/40 rounded-xl flex flex-col items-center gap-6">
+                            <div className="col-span-full py-12 md:py-20 text-center border-2 border-dashed border-border/40 rounded-xl flex flex-col items-center gap-6">
                                 <div className="space-y-4">
-                                    <p className="text-2xl font-bold tracking-tight text-foreground/40 uppercase">Null Result</p>
+                                    <p className="text-2xl font-bold tracking-tight text-foreground/40 uppercase">NULL RESULT</p>
+                                    <div className="w-12 h-1 bg-border/40 mx-auto" />
                                     <p className="text-sm font-medium text-muted-foreground/40 max-w-md mx-auto leading-relaxed">
-                                        No prompts matched your current search parameters.
+                                        No Flows match your current filters.
                                     </p>
                                 </div>
+
+                                <div className="flex items-center gap-4">
+                                    <Link href="/library">
+                                        <Button variant="secondary" className="bg-secondary/50">
+                                            Clear filters
+                                        </Button>
+                                    </Link>
+                                    <Link href="/library?tags=featured">
+                                        <Button variant="default">
+                                            Browse Featured
+                                        </Button>
+                                    </Link>
+                                </div>
+
+                                <Link href="/submit" className="text-sm font-semibold text-primary hover:underline">
+                                    Or submit a Flow →
+                                </Link>
+
+                                <p className="text-xs text-muted-foreground/40 uppercase tracking-widest font-bold pt-4">
+                                    Try: GitHub · scraping · forms · research
+                                </p>
                             </div>
                         )}
                     </div>

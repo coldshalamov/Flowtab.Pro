@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { fetchPrompt } from "@/lib/api";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/CopyButton";
+import { SaveButton } from "@/components/SaveButton";
 import { AdminControls } from "@/components/AdminControls";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentsSection } from "@/components/CommentsSection";
+import { Button } from "@/components/ui/button";
 import { Layers, ChevronLeft, Clock, Globe } from "lucide-react";
 import type { Metadata } from "next";
-
+import Image from "next/image";
 
 export async function generateMetadata(props: {
     params: Promise<{ slug: string }> | { slug: string };
@@ -38,8 +39,8 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                 </div>
 
                 {/* Header Section */}
-                <div className="space-y-8 mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground uppercase leading-[0.9]">
+                <div className="space-y-6 mb-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                    <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-foreground uppercase leading-[0.9]">
                         {prompt.title}
                     </h1>
 
@@ -52,6 +53,16 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                             <Clock className="h-3.5 w-3.5" />
                             Compiled // {new Date(prompt.updatedAt).toLocaleDateString()}
                         </div>
+                        {prompt.worksWith && prompt.worksWith.length > 0 && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground/60">Works With //</span>
+                                <div className="flex gap-2">
+                                    {prompt.worksWith.map(w => (
+                                        <span key={w} className="bg-secondary px-1.5 py-0.5 rounded text-foreground">{w}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <div className="flex items-center gap-2">
                             <Globe className="h-3.5 w-3.5" />
                             Target // {prompt.targetSites.join(", ") || "Agnostic"}
@@ -59,94 +70,114 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                     </div>
                 </div>
 
-                <div className="grid gap-12 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
-                    {/* Actions Panel */}
-                    <div className="grid sm:grid-cols-3 gap-4 sticky top-20 z-20 bg-background/80 backdrop-blur-md p-4 -mx-4 rounded-lg border border-border/40 shadow-sm">
-                        <CopyButton
-                            text={prompt.promptText}
-                            label="Copy Flow"
-                            variant="default"
-                            className="h-12 bg-foreground text-background hover:bg-foreground/90 font-bold uppercase tracking-widest text-xs"
-                        />
-                        <CopyButton
-                            text={jsonString}
-                            label="Copy Flow Metadata"
-                            variant="outline"
-                            className="h-12 border-border font-bold uppercase tracking-widest text-xs"
-                        />
-                        <LikeButton
-                            targetType="prompt"
-                            targetId={prompt.slug}
-                            initialCount={prompt.like_count ?? 0}
-                            size="default"
-                            className="h-12 font-bold uppercase tracking-widest text-xs"
-                        />
-                        <div className="sm:col-span-3">
-                            <AdminControls slug={prompt.slug} />
-                        </div>
-                    </div>
-
-                    <div className="grid gap-12">
-
-                        {/* Source Payload */}
-                        <Card className="rounded-lg border-border bg-card overflow-hidden">
-                            <CardHeader className="border-b border-border bg-muted/30 py-4">
-                                <CardTitle className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-3">
-                                    <Layers className="h-3.5 w-3.5" />
-                                    Source Payload
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <pre className="whitespace-pre-wrap break-words p-8 font-mono text-sm text-foreground/80 overflow-x-auto leading-relaxed selection:bg-primary/20 bg-muted/10">
-                                    {prompt.promptText}
-                                </pre>
-                            </CardContent>
-                        </Card>
-
-                        <div className="grid lg:grid-cols-5 gap-12">
-                            {/* Execution Steps */}
-                            <div className="lg:col-span-3 space-y-8">
-                                <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground">Operational sequence</h3>
-                                <ol className="space-y-6">
-                                    {prompt.steps.map((step: string, i: number) => (
-                                        <li key={i} className="flex gap-6 group">
-                                            <span className="flex-shrink-0 w-8 h-8 rounded-md bg-secondary border border-border flex items-center justify-center font-bold text-xs text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-all">
-                                                {i + 1}
-                                            </span>
-                                            <p className="text-muted-foreground font-medium pt-1.5 leading-relaxed">{step}</p>
-                                        </li>
-                                    ))}
-                                </ol>
+                <div className="grid lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
+                    {/* Left Column: Actions & Metadata */}
+                    <div className="space-y-8 lg:sticky lg:top-24 h-fit">
+                        <div className="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
+                            <div className="grid gap-3">
+                                <CopyButton
+                                    text={prompt.promptText}
+                                    label="Copy Flow"
+                                    variant="default"
+                                    className="h-12 w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold uppercase tracking-widest text-xs"
+                                />
+                                <SaveButton className="h-12 w-full font-bold uppercase tracking-widest text-xs" />
                             </div>
 
-                            {/* Tags and Notes */}
-                            <div className="lg:col-span-2 space-y-12">
-                                <div className="space-y-6">
-                                    <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground">Keywords</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {prompt.tags.map((tag: string) => (
-                                            <div key={tag} className="px-3 py-1.5 rounded-md bg-secondary border border-border text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                                                #{tag}
-                                            </div>
-                                        ))}
+                            <div className="pt-4 border-t border-border flex justify-between items-center">
+                                <LikeButton
+                                    targetType="prompt"
+                                    targetId={prompt.slug}
+                                    initialCount={prompt.like_count ?? 0}
+                                    size="sm"
+                                    className="uppercase font-bold text-[10px]"
+                                />
+                                <Button variant="link" size="sm" className="h-auto p-0 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive">
+                                    Report Flow
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Admin Controls */}
+                        <AdminControls slug={prompt.slug} />
+                    </div>
+
+                    {/* Right Column: Flow Steps */}
+                    <div className="lg:col-span-2 space-y-12">
+                        <div className="rounded-xl border border-border bg-card overflow-hidden">
+                            <div className="border-b border-border bg-muted/30 px-6 py-4">
+                                <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground flex items-center gap-2">
+                                    <Layers className="h-3.5 w-3.5" /> Flow Steps
+                                </h3>
+                            </div>
+
+                            <div className="p-8 space-y-8">
+                                {/* Context */}
+                                <div className="space-y-3">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 bg-secondary/50 px-2 py-1 rounded inline-block">Context</span>
+                                    <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                                        {prompt.notes || "No context provided. Run this flow in a compatible browser agent."}
+                                    </p>
+                                </div>
+
+                                {/* Inputs */}
+                                <div className="space-y-3">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 bg-secondary/50 px-2 py-1 rounded inline-block">Inputs</span>
+                                    <div className="p-4 rounded-lg bg-secondary/20 border border-border/50 text-xs font-mono text-muted-foreground">
+                                        // Standard inputs inferred
+                                        <br /> TARGET_URL: &quot;{prompt.targetSites[0] || "Any"}&quot;
                                     </div>
                                 </div>
 
-                                {prompt.notes && (
-                                    <div className="space-y-6">
-                                        <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground">Operational Anomalies</h3>
-                                        <div className="p-6 rounded-lg border border-border bg-muted/20 italic text-muted-foreground font-medium text-sm leading-relaxed border-l-4 border-l-primary">
-                                            &quot;{prompt.notes}&quot;
-                                        </div>
+                                {/* Actions */}
+                                <div className="space-y-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 bg-secondary/50 px-2 py-1 rounded inline-block">Actions</span>
+                                    <ol className="space-y-4">
+                                        {prompt.steps.map((step: string, i: number) => (
+                                            <li key={i} className="flex gap-4 group">
+                                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-secondary border border-border flex items-center justify-center font-bold text-[10px] text-muted-foreground">
+                                                    {i + 1}
+                                                </span>
+                                                <p className="text-foreground/90 text-sm font-medium leading-relaxed pt-0.5">{step}</p>
+                                            </li>
+                                        ))}
+                                        {prompt.steps.length === 0 && (
+                                            <li className="text-muted-foreground text-sm italic">See prompt text for details.</li>
+                                        )}
+                                    </ol>
+                                </div>
+
+                                {/* Exit & Failure (Mocked/Static for now as per "stub" instruction) */}
+                                <div className="grid sm:grid-cols-2 gap-6 pt-6 border-t border-border/40">
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Exit Condition</span>
+                                        <p className="text-xs text-muted-foreground">Flow completes when all steps are verified.</p>
                                     </div>
-                                )}
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Failure Handling</span>
+                                        <p className="text-xs text-muted-foreground">Stop on error. Notify user.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Full Prompt Text (Hidden or Secondary?) - User didn't ask to hide it, but focused on "Steps Format". I'll keep it as "Raw Source" below */}
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">Raw Source</h3>
+                            <div className="relative group">
+                                <pre className="whitespace-pre-wrap break-words p-6 rounded-lg border border-border bg-muted/10 font-mono text-xs text-muted-foreground overflow-x-auto max-h-[300px] overflow-y-auto">
+                                    {prompt.promptText}
+                                </pre>
+                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <CopyButton text={prompt.promptText} variant="secondary" className="h-8 text-[10px] uppercase font-bold" />
+                                </div>
+                            </div>
                         </div>
 
                         <CommentsSection promptSlug={prompt.slug} promptId={prompt.id} />
                     </div>
                 </div>
             </div>
-        </div>
         </div>
     );
 }

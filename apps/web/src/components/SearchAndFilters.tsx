@@ -56,57 +56,65 @@ export function SearchAndFilters({ availableTags }: { availableTags: string[] })
         router.replace("/library");
     };
 
+    // Hardcoded default tags as requested
+    const defaultTags = [
+        "GitHub", "Scraping", "Forms", "Research", "Outreach",
+        "Shopping", "Dashboards", "Data Extract", "QA / Review", "DevOps"
+    ];
+
+    // Merge available tags with defaults, deduping
+    const allTags = Array.from(new Set([...defaultTags, ...availableTags]));
+
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <div className="space-y-8">
+            <div className="flex flex-col gap-2">
+                <div className="relative w-full">
+                    <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search prompts…"
+                        placeholder="Search Flows…"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === "Escape") clearAll();
                         }}
-                        className="pl-10 h-11 bg-background border-border focus:ring-1 focus:ring-primary/20 transition-all rounded-md"
+                        className="pl-10 h-12 bg-background border-border focus:ring-1 focus:ring-primary/20 transition-all rounded-md text-base"
                     />
+                    {(q.trim().length > 0 || selectedTags.length > 0) && (
+                        <div className="absolute right-2 top-2">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={clearAll}
+                                className="h-8 px-3 text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground"
+                            >
+                                Clear <X className="ml-2 h-3 w-3" />
+                            </Button>
+                        </div>
+                    )}
                 </div>
-
-                {(q.trim().length > 0 || selectedTags.length > 0) && (
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={clearAll}
-                        className="h-11 px-4 text-xs uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground"
-                    >
-                        Clear <X className="ml-2 h-3.5 w-3.5" />
-                    </Button>
-                )}
+                <p className="text-xs font-medium text-muted-foreground/60 pl-1">
+                    Try: GitHub, scraping, forms, research, outreach
+                </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
                 <Label className="text-foreground text-xs uppercase tracking-widest font-bold opacity-60">Keywords</Label>
-                <div className="flex flex-wrap gap-2">
-                    {availableTags.map(tag => (
+                <div className="flex flex-wrap gap-2.5">
+                    {allTags.map(tag => (
                         <Badge
                             key={tag}
-                            variant={selectedTags.includes(tag) ? "default" : "outline"}
+                            variant="outline"
                             className={cn(
-                                "cursor-pointer h-7 px-3 text-[11px] font-bold uppercase tracking-wider transition-all",
+                                "cursor-pointer h-9 px-4 text-xs font-semibold transition-all rounded-full touch-target",
                                 selectedTags.includes(tag)
-                                    ? "bg-primary text-primary-foreground border-primary"
-                                    : "text-muted-foreground border-border hover:border-foreground/20 bg-background"
+                                    ? "bg-primary/20 border-primary text-primary hover:bg-primary/30 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]"
+                                    : "bg-background border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground hover:bg-secondary/50"
                             )}
                             onClick={() => toggleTag(tag)}
                         >
-                            #{tag}
+                            {tag}
                         </Badge>
                     ))}
-                    {selectedTags.length > 0 && (
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedTags([])} className="h-7 px-3 text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-destructive">
-                            Clear Tags <X className="ml-1.5 h-3 w-3" />
-                        </Button>
-                    )}
                 </div>
             </div>
         </div>

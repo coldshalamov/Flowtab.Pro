@@ -171,9 +171,15 @@ export async function deletePrompt(slug: string): Promise<boolean> {
 
 // Comments
 export async function fetchComments(slug: string): Promise<CommentListResponse> {
-  const res = await fetch(`${API_BASE}/v1/prompts/${slug}/comments`, readFetchInit);
-  if (!res.ok) throw new Error("Failed to fetch comments");
-  return await res.json();
+  try {
+    const res = await fetch(`${API_BASE}/v1/prompts/${slug}/comments`, readFetchInit);
+    if (!res.ok) throw new Error("Failed to fetch comments");
+    return await res.json();
+  } catch (error) {
+    // Return empty comments array as fallback when API is unavailable
+    console.warn("Comments API unavailable, returning empty list");
+    return { items: [] };
+  }
 }
 
 export async function createComment(slug: string, body: string): Promise<Comment> {

@@ -4,6 +4,19 @@ import { Mail, Github } from "lucide-react";
 export function SiteFooter() {
     return (
         <footer className="border-t border-border/60 bg-muted/20">
+            {/* Step 9: Activity Strip */}
+            <div className="border-b border-border/40 bg-background/50 backdrop-blur-sm">
+                <div className="container max-w-screen-2xl px-6 py-3 flex gap-8 items-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 overflow-x-auto whitespace-nowrap">
+                    <span className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary/50"></span>
+                        Activity
+                    </span>
+                    <span className="text-foreground/80">New Flows: —</span>
+                    <span className="text-foreground/80">Featured: 5</span>
+                    <span className="text-foreground/80">Community: — likes</span>
+                </div>
+            </div>
+
             <div className="container max-w-screen-2xl px-6 py-16">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
                     {/* Brand */}
@@ -39,38 +52,32 @@ export function SiteFooter() {
                         </ul>
                     </div>
 
-                    {/* Categories */}
-                    <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-foreground tracking-tight">
-                            Collections
-                        </h4>
-                        <ul className="space-y-3 text-sm font-medium text-muted-foreground">
-                            <li>
-                                <Link href="/library?tags=social-media" className="hover:text-foreground transition-colors">
-                                    Social Media
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/library?tags=work" className="hover:text-foreground transition-colors">
-                                    Work
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/library?tags=programming" className="hover:text-foreground transition-colors">
-                                    Programming
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/library?tags=marketing" className="hover:text-foreground transition-colors">
-                                    Marketing
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/library?tags=data" className="hover:text-foreground transition-colors">
-                                    Data
-                                </Link>
-                            </li>
-                        </ul>
+                    {/* Step 8: Collections */}
+                    <div className="space-y-6">
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-semibold text-foreground tracking-tight">
+                                Collections
+                            </h4>
+                            <ul className="space-y-3 text-sm font-medium text-muted-foreground">
+                                <li><Link href="/library?tags=dev,github" className="hover:text-foreground transition-colors">Dev / GitHub</Link></li>
+                                <li><Link href="/library?tags=research" className="hover:text-foreground transition-colors">Research</Link></li>
+                                <li><Link href="/library?tags=scraping" className="hover:text-foreground transition-colors">Scraping / Extraction</Link></li>
+                                <li><Link href="/library?tags=ops" className="hover:text-foreground transition-colors">Ops / Admin</Link></li>
+                                <li><Link href="/library?tags=outreach" className="hover:text-foreground transition-colors">Outreach / CRM</Link></li>
+                                <li><Link href="/library?tags=shopping" className="hover:text-foreground transition-colors">Shopping / Monitoring</Link></li>
+                                <li><Link href="/library?tags=social-media" className="hover:text-foreground transition-colors">Social Media</Link></li>
+                            </ul>
+                        </div>
+
+                        {/* Step 8: Sidebar CTA (Placed here as requested "in sidebar" context implies navigation column) */}
+                        <div className="p-4 rounded-lg bg-secondary/50 border border-border/50 space-y-2">
+                            <p className="text-xs font-semibold text-foreground leading-snug">
+                                Want a Flow for a task you can’t automate yet?
+                            </p>
+                            <a href="mailto:request@flowtab.pro" className="text-xs font-bold text-primary hover:underline block">
+                                Request a Flow →
+                            </a>
+                        </div>
                     </div>
 
                     {/* Connect */}

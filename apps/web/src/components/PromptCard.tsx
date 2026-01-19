@@ -1,59 +1,83 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { type Prompt } from "@/lib/api";
-import { Clock, Globe } from "lucide-react";
+import { Heart, Bookmark, BarChart } from "lucide-react"; // Using BarChart as placeholder for difficulty or just text
+import Image from "next/image";
+
+const WORKS_WITH_MAP: Record<string, string> = {
+    "comet": "/images/logos/comet.webp",
+    "manus": "/images/logos/manus.png",
+    "neon": "/images/logos/neon.jpg",
+    "playwright": "/images/logos/playwright.png",
+    "atlas": "/images/logos/atlas.png",
+};
 
 export function PromptCard({ prompt }: { prompt: Prompt }) {
-    const updatedLabel = new Date(prompt.updatedAt).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-    });
+    const isDraft = prompt.tags.includes("Draft") || prompt.title.includes("Draft");
 
-    const targetsLabel =
-        prompt.targetSites && prompt.targetSites.length > 0
-            ? prompt.targetSites.length === 1
-                ? prompt.targetSites[0]
-                : `${prompt.targetSites[0]} +${prompt.targetSites.length - 1}`
-            : "Agnostic";
+    // Normalize worksWith to lowercase for mapping
+    const worksWithLogos = (prompt.worksWith || []).map(w => ({
+        name: w,
+        src: WORKS_WITH_MAP[w.toLowerCase()]
+    })).filter(w => w.src); // Only show if we have a logo? Or show text? User said "Works with icons (small)"
 
     return (
         <Link href={`/p/${prompt.slug}`} className="group block h-full">
-            <Card className="h-full transition-all duration-300 bg-card border-border hover:border-foreground/20 hover:shadow-md rounded-lg overflow-hidden flex flex-col">
-                <CardHeader className="space-y-3 pb-4">
-                    <CardTitle className="text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">
+            <Card className="h-full transition-all duration-200 bg-card border-border hover:border-primary/50 hover:shadow-lg rounded-xl overflow-hidden flex flex-col relative group-hover:-translate-y-1">
+                {isDraft && (
+                    <div className="absolute top-3 right-3 z-10">
+                        <Badge variant="outline" className="bg-background/80 backdrop-blur text-[10px] uppercase tracking-widest text-muted-foreground border-border">
+                            Draft
+                        </Badge>
+                    </div>
+                )}
+
+                <CardHeader className="space-y-1.5 pb-3">
+                    <CardTitle className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1">
                         {prompt.title}
                     </CardTitle>
+                    <p className="text-sm text-muted-foreground line-clamp-1 font-medium">
+                        {prompt.summary}
+                    </p>
                 </CardHeader>
 
-                <CardContent className="space-y-6 flex-1 flex flex-col">
-                    <CardDescription className="text-muted-foreground font-medium leading-relaxed line-clamp-3">
-                        {prompt.summary}
-                    </CardDescription>
-
-                    <div className="flex flex-wrap gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                        <div className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5" />
-                            Updated {updatedLabel}
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <Globe className="h-3.5 w-3.5" />
-                            {targetsLabel}
-                        </div>
-                    </div>
-
-                    <div className="mt-auto pt-4 flex flex-wrap gap-2 text-xs">
-                        {prompt.tags.slice(0, 3).map((tag: string) => (
-                            <Badge key={tag} variant="secondary" className="bg-secondary/50 text-secondary-foreground hover:bg-secondary rounded-md font-medium px-2 py-0.5">
-                                #{tag}
+                <CardContent className="space-y-6 flex-1 flex flex-col justify-between">
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1.5">
+                        {prompt.tags.filter(t => t !== 'Draft').slice(0, 3).map((tag: string) => (
+                            <Badge key={tag} variant="secondary" className="bg-secondary text-secondary-foreground/80 hover:bg-secondary-foreground/10 rounded-md font-medium text-[10px] px-2 h-6">
+                                {tag}
                             </Badge>
                         ))}
-                        {prompt.tags.length > 3 && (
-                            <span className="text-xs text-muted-foreground font-medium flex items-center pl-1">
-                                +{prompt.tags.length - 3}
-                            </span>
+                        {prompt.tags.filter(t => t !== 'Draft').length > 3 && (
+                            <Badge variant="secondary" className="bg-secondary text-muted-foreground rounded-md font-medium text-[10px] px-2 h-6">
+                                +{prompt.tags.filter(t => t !== 'Draft').length - 3}
+                            </Badge>
                         )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-border/40 mt-auto">
+                        <div className="flex items-center gap-2">
+                            {/* Works With logos removed as per request */}
+                        </div>
+
+                        <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground/60">
+                            <div className="flex items-center gap-1" title="Difficulty">
+                                <span className={
+                                    prompt.difficulty === 'advanced' ? "text-primary" :
+                                        prompt.difficulty === 'intermediate' ? "text-foreground/70" : "text-muted-foreground"
+                                }>
+                                    {prompt.difficulty ? (prompt.difficulty.charAt(0).toUpperCase() + prompt.difficulty.slice(1)) : 'Simple'}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3" /> {prompt.like_count || 0}
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <Bookmark className="h-3 w-3" /> {prompt.savesCount || 0}
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
