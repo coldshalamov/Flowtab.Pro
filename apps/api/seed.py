@@ -7,7 +7,7 @@ browser prompt recipe library.
 
 from sqlmodel import Session
 
-from apps.api.crud import create_prompt, get_prompt_by_slug
+from apps.api.crud import create_prompt, get_prompt_by_slug, get_user_by_email_or_username, create_user
 from apps.api.db import engine
 from apps.api.schemas import PromptCreate
 
