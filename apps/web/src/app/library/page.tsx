@@ -44,7 +44,7 @@ export default async function LibraryPage(props: {
                             </h1>
                         </div>
                         <p className="text-xl md:text-2xl font-medium text-foreground/90 ml-5">
-                            Browse Flows. Copy. Run. Iterate.
+                            Copy. Run. Iterate. Flow
                         </p>
                         <p className="text-sm font-medium text-muted-foreground/60 ml-5">
                             Runner-agnostic workflows for browser-based agents.
