@@ -15,7 +15,10 @@ export interface Prompt {
   createdAt: string; // ISO
   updatedAt: string; // ISO
   like_count?: number;
-  savesCount?: number;
+  saves_count?: number;
+  type: "prompt" | "discussion";
+  price: number;
+  currency: string;
 }
 
 export interface Comment {
@@ -61,6 +64,8 @@ export interface User {
   is_active: boolean;
   is_superuser: boolean;
   createdAt: string;
+  stripe_connect_id?: string;
+  is_seller?: boolean;
 }
 
 export interface AuthResponse {

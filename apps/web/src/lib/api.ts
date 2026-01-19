@@ -377,3 +377,69 @@ export async function exchangeOAuthCode(
 
   return await res.json();
 }
+
+
+// --- Marketplace & Saves ---
+
+export async function connectStripe(): Promise<{ url: string }> {
+  const tokenHeaders = authHeaders();
+  if (!tokenHeaders) throw new Error("Not authenticated");
+
+  const res = await fetch(`${API_BASE}/v1/stripe/connect`, {
+    method: "POST",
+    headers: tokenHeaders,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to connect Stripe");
+  }
+  return await res.json();
+}
+
+export async function buyPrompt(slug: string): Promise<{
+  clientSecret: string;
+  publishableKey: string;
+  amount: number;
+  currency: string;
+}> {
+  const tokenHeaders = authHeaders();
+  if (!tokenHeaders) throw new Error("Not authenticated");
+
+  const res = await fetch(`${API_BASE}/v1/prompts/${slug}/buy`, {
+    method: "POST",
+    headers: tokenHeaders,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to initiate purchase");
+  }
+  return await res.json();
+}
+
+export async function savePrompt(slug: string): Promise<LikeStatusResponse> {
+  const tokenHeaders = authHeaders();
+  if (!tokenHeaders) throw new Error("Not authenticated");
+
+  const res = await fetch(`${API_BASE}/v1/prompts/${slug}/save`, {
+    method: "PUT",
+    headers: tokenHeaders,
+  });
+
+  if (!res.ok) throw new Error("Failed to bookmark prompt");
+  return await res.json();
+}
+
+export async function unsavePrompt(slug: string): Promise<LikeStatusResponse> {
+  const tokenHeaders = authHeaders();
+  if (!tokenHeaders) throw new Error("Not authenticated");
+
+  const res = await fetch(`${API_BASE}/v1/prompts/${slug}/save`, {
+    method: "DELETE",
+    headers: tokenHeaders,
+  });
+
+  if (!res.ok) throw new Error("Failed to remove bookmark");
+  return await res.json();
+}

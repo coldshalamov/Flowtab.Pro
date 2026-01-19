@@ -172,7 +172,10 @@ After pasting the resolved code, the editor should show clean code with **zero c
         createdAt: "2026-01-15T10:00:00Z",
         updatedAt: "2026-01-18T14:40:00Z",
         like_count: 19,
-        savesCount: 8
+        saves_count: 8,
+        type: "prompt",
+        price: 0,
+        currency: "usd"
     },
     {
         id: "2",
@@ -206,7 +209,10 @@ Price drops below target OR monitoring period expires.`,
         createdAt: "2026-01-10T09:00:00Z",
         updatedAt: "2026-01-18T08:00:00Z",
         like_count: 14,
-        savesCount: 5
+        saves_count: 5,
+        type: "prompt",
+        price: 0,
+        currency: "usd"
     },
     {
         id: "3",
@@ -229,10 +235,6 @@ Price drops below target OR monitoring period expires.`,
 ### Steps:
 1. Navigate to Jobs with Easy Apply filter
 2. For each job listing:
-   - Click "Easy Apply"
-   - Fill any required fields from profile data
-   - Submit application
-   - Log the job title and company
 3. Move to next listing
 4. Stop after N applications or end of results
 
@@ -250,7 +252,10 @@ Price drops below target OR monitoring period expires.`,
         createdAt: "2026-01-08T14:00:00Z",
         updatedAt: "2026-01-17T16:00:00Z",
         like_count: 18,
-        savesCount: 12
+        saves_count: 12,
+        type: "prompt",
+        price: 999,
+        currency: "usd"
     },
     {
         id: "4",
@@ -292,7 +297,10 @@ Price drops below target OR monitoring period expires.`,
         createdAt: "2026-01-05T11:00:00Z",
         updatedAt: "2026-01-16T09:30:00Z",
         like_count: 16,
-        savesCount: 9
+        saves_count: 9,
+        type: "prompt",
+        price: 0,
+        currency: "usd"
     },
     {
         id: "5",
@@ -333,7 +341,10 @@ Price drops below target OR monitoring period expires.`,
         createdAt: "2026-01-12T16:00:00Z",
         updatedAt: "2026-01-18T10:00:00Z",
         like_count: 7,
-        savesCount: 3
+        saves_count: 3,
+        type: "prompt",
+        price: 0,
+        currency: "usd"
     }
 ];
 
