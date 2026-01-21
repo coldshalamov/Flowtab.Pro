@@ -1535,3 +1535,296 @@ def buy_prompt(
         }
     except Exception as e:
         return error_response(error="Stripe Error", message=str(e), status_code=500)
+
+
+# ============================================================================
+# MONETIZATION ENDPOINTS (Subscriptions, Copy Tracking, Creator Features)
+# ============================================================================
+
+@router.post("/webhooks/stripe", tags=["webhooks"])
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events."""
+    from apps.api.stripe_utils import stripe_client, handle_subscription_event
+
+    body = await request.body()
+    signature = request.headers.get("stripe-signature")
+
+    if not signature:
+        return error_response(
+            error="Bad Request",
+            message="Missing stripe-signature header",
+            status_code=400
+        )
+
+    if not stripe_client.verify_webhook_signature(body, signature):
+        return error_response(
+            error="Unauthorized",
+            message="Invalid webhook signature",
+            status_code=401
+        )
+
+    try:
+        import json
+        event = json.loads(body)
+
+        # Handle subscription events
+        if event["type"].startswith("customer.subscription"):
+            session = get_session().__next__()
+            result = handle_subscription_event(session, event)
+            if result.get("status") == "error":
+                return error_response(
+                    error="Webhook Error",
+                    message=result.get("message"),
+                    status_code=500
+                )
+
+        return {"status": "received"}
+    except Exception as e:
+        logger.error(f"Webhook error: {str(e)}")
+        return error_response(
+            error="Webhook Error",
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/subscriptions/me", tags=["subscriptions"])
+def get_my_subscription(
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+):
+    """Get current user's subscription status."""
+    from apps.api.crud import get_subscription_by_user, count_copies_this_month
+    from apps.api.schemas import SubscriptionStatusResponse, SubscriptionRead
+
+    subscription = get_subscription_by_user(session, current_user.id)
+    copies_this_month = count_copies_this_month(session, current_user.id)
+    copies_remaining = max(0, 100 - copies_this_month)
+
+    if subscription:
+        sub_data = SubscriptionRead.from_orm(subscription)
+        return SubscriptionStatusResponse(
+            is_subscriber=subscription.status == "active",
+            subscription=sub_data,
+            copies_remaining=copies_remaining
+        )
+
+    return SubscriptionStatusResponse(
+        is_subscriber=False,
+        subscription=None,
+        copies_remaining=0
+    )
+
+
+@router.post("/subscriptions/checkout", tags=["subscriptions"])
+def create_subscription_checkout(
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+):
+    """Create a checkout session for premium subscription."""
+    from apps.api.stripe_utils import stripe_client
+
+    if not settings.stripe_premium_price_id:
+        return error_response(
+            error="Configuration Error",
+            message="Premium plan not configured",
+            status_code=500
+        )
+
+    try:
+        # Create or get Stripe customer
+        if not current_user.stripe_customer_id:
+            current_user.stripe_customer_id = stripe_client.create_customer(
+                current_user.email,
+                current_user.username
+            )
+            session.add(current_user)
+            session.commit()
+
+        # Create checkout session
+        session_id = stripe_client.create_checkout_session(
+            customer_id=current_user.stripe_customer_id,
+            price_id=settings.stripe_premium_price_id,
+            success_url=f"{settings.frontend_url}/account/subscription?success=true",
+            cancel_url=f"{settings.frontend_url}/account/subscription?canceled=true",
+        )
+
+        return {"sessionId": session_id}
+    except Exception as e:
+        logger.error(f"Checkout error: {str(e)}")
+        return error_response(
+            error="Stripe Error",
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/flows/{flow_id}/copy", tags=["flows", "monetization"])
+def record_flow_copy(
+    flow_id: str,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Record that a user copied a flow.
+
+    Tracks copies for payout calculation.
+    Returns how many copies the user has left this month.
+    """
+    from apps.api.crud import (
+        get_prompt_by_slug,
+        get_subscription_by_user,
+        record_flow_copy as record_copy,
+        count_copies_this_month,
+        has_copied_this_month,
+    )
+    from apps.api.schemas import FlowCopyResponse
+
+    # Get the flow
+    flow = session.get(Prompt, flow_id)
+    if not flow:
+        return error_response(
+            error="Not Found",
+            message="Flow not found",
+            status_code=404
+        )
+
+    # Check subscription
+    subscription = get_subscription_by_user(session, current_user.id)
+    if not subscription or subscription.status != "active":
+        return error_response(
+            error="Forbidden",
+            message="Premium subscription required",
+            status_code=403
+        )
+
+    # Check if already copied this month
+    if has_copied_this_month(session, current_user.id, flow_id):
+        return error_response(
+            error="Conflict",
+            message="You've already copied this flow this month",
+            status_code=409
+        )
+
+    # Check copy limit
+    copies_count = count_copies_this_month(session, current_user.id)
+    if copies_count >= 100:
+        return error_response(
+            error="Limit Exceeded",
+            message="You've reached your monthly copy limit (100)",
+            status_code=429
+        )
+
+    try:
+        # Record copy (payout eligible if under 100 copies)
+        copy = record_copy(
+            session=session,
+            user_id=current_user.id,
+            flow_id=flow_id,
+            creator_id=flow.author_id,
+            counted_for_payout=(copies_count < 100),
+        )
+
+        # Update flow total_copies counter
+        flow.total_copies = (flow.total_copies or 0) + 1
+        session.add(flow)
+        session.commit()
+
+        # Return response
+        new_copy_count = count_copies_this_month(session, current_user.id)
+        payout_earned = 7 if copies_count < 100 else 0
+
+        return FlowCopyResponse(
+            id=copy.id,
+            user_id=copy.user_id,
+            flow_id=copy.flow_id,
+            copied_at=copy.copied_at,
+            copies_this_month=new_copy_count,
+            copies_remaining=max(0, 100 - new_copy_count),
+            payout_earned=payout_earned
+        )
+    except ValueError as e:
+        return error_response(
+            error="Bad Request",
+            message=str(e),
+            status_code=400
+        )
+    except Exception as e:
+        logger.error(f"Copy tracking error: {str(e)}")
+        return error_response(
+            error="Server Error",
+            message="Failed to record copy",
+            status_code=500
+        )
+
+
+@router.get("/creators/me/earnings", tags=["creators"])
+def get_my_earnings(
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+):
+    """Get creator earnings and account balance."""
+    from apps.api.crud import get_payouts_for_creator, get_total_earnings
+    from apps.api.schemas import CreatorAccountResponse, CreatorEarningsResponse
+
+    payouts = get_payouts_for_creator(session, current_user.id)
+    total_earnings_cents = get_total_earnings(session, current_user.id)
+
+    # Calculate account balance (all paid + pending payouts)
+    account_balance_cents = sum(p.amount_cents for p in payouts)
+
+    monthly_earnings = [
+        CreatorEarningsResponse(
+            billing_month=p.billing_month,
+            copy_count=p.copy_count,
+            amount_cents=p.amount_cents,
+            amount_dollars=p.amount_cents / 100,
+            status=p.status,
+            paid_at=p.paid_at
+        )
+        for p in payouts
+    ]
+
+    return CreatorAccountResponse(
+        user_id=current_user.id,
+        is_creator=current_user.is_creator,
+        account_balance_cents=account_balance_cents,
+        account_balance_dollars=account_balance_cents / 100,
+        total_earnings_cents=total_earnings_cents,
+        total_earnings_dollars=total_earnings_cents / 100,
+        monthly_earnings=monthly_earnings
+    )
+
+
+@router.post("/creators/me/connect", tags=["creators"])
+def start_stripe_connect_onboarding(
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session),
+):
+    """Start Stripe Connect onboarding for a creator."""
+    from apps.api.stripe_utils import stripe_client
+
+    try:
+        # Create or get Stripe Connect account
+        if not current_user.stripe_connect_id:
+            account = stripe_client.create_account(current_user.email)
+            current_user.stripe_connect_id = account.id
+            current_user.is_creator = True
+            session.add(current_user)
+            session.commit()
+
+        # Create onboarding link
+        link = stripe_client.create_account_link(
+            account_id=current_user.stripe_connect_id,
+            refresh_url=f"{settings.frontend_url}/creator/connect",
+            return_url=f"{settings.frontend_url}/creator/dashboard",
+        )
+
+        return {"onboarding_url": link.url}
+    except Exception as e:
+        logger.error(f"Stripe Connect error: {str(e)}")
+        return error_response(
+            error="Stripe Error",
+            message=str(e),
+            status_code=500
+        )

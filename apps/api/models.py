@@ -72,7 +72,12 @@ class Prompt(SQLModel, table=True):
 
     like_count: int = Field(default=0, description="Number of likes")
     saves_count: int = Field(default=0, description="Number of bookmarks")
-    
+
+    # Subscription fields
+    is_premium: bool = Field(default=True, description="Whether this Flow requires premium subscription")
+    featured: bool = Field(default=False, description="Show in free tier preview")
+    total_copies: int = Field(default=0, description="Cached total copy count")
+
     # Marketplace fields
     price: int = Field(default=0, description="Price in cents (0 = free)")
     currency: str = Field(default="usd", max_length=3)
@@ -187,8 +192,12 @@ class User(SQLModel, table=True):
         default_factory=datetime.utcnow, description="Creation timestamp"
     )
     comments: list["Comment"] = Relationship(back_populates="author")
-    
-    # Marketplace fields
+
+    # Subscription fields
+    stripe_customer_id: str | None = Field(default=None, index=True, description="Stripe Customer ID for subscriptions")
+    is_creator: bool = Field(default=False, description="Whether the user is a content creator")
+
+    # Marketplace fields (creator payouts)
     stripe_connect_id: str | None = Field(default=None, index=True, description="Stripe Connect Account ID")
     is_seller: bool = Field(default=False, description="Whether the user has enabled selling")
 
@@ -212,7 +221,7 @@ class Save(SQLModel, table=True):
 
 class Purchase(SQLModel, table=True):
     """Record of a prompt purchase."""
-    
+
     __tablename__ = "purchases"
 
     id: str = Field(
@@ -222,12 +231,88 @@ class Purchase(SQLModel, table=True):
     buyer_id: str = Field(foreign_key="users.id", index=True)
     seller_id: str = Field(foreign_key="users.id", index=True)
     prompt_id: str = Field(foreign_key="prompts.id", index=True)
-    
+
     amount_cents: int = Field(description="Total amount charged in cents")
     platform_fee_cents: int = Field(description="Fee taken by platform in cents")
     currency: str = Field(default="usd", max_length=3)
-    
+
     stripe_payment_intent_id: str = Field(index=True)
     status: str = Field(default="pending", index=True) # pending, paid, failed, refunded
-    
+
     createdAt: datetime = Field(default_factory=datetime.utcnow)
+
+
+class Subscription(SQLModel, table=True):
+    """User subscription state (managed by Stripe webhooks)."""
+
+    __tablename__ = "subscriptions"
+    __table_args__ = (
+        UniqueConstraint("user_id", name="uq_subscription_user"),
+        UniqueConstraint("stripe_subscription_id", name="uq_subscription_stripe_id"),
+    )
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+    user_id: str = Field(foreign_key="users.id", index=True)
+
+    stripe_subscription_id: str = Field(index=True, max_length=255)
+    stripe_customer_id: str = Field(max_length=255)
+
+    status: str = Field(max_length=20, index=True)  # active, canceled, past_due, unpaid
+    plan_id: str = Field(default="premium_monthly", max_length=50)
+
+    current_period_start: datetime = Field()
+    current_period_end: datetime = Field()
+    cancel_at_period_end: bool = Field(default=False)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class FlowCopy(SQLModel, table=True):
+    """Append-only log of Flow copy events for payout calculation."""
+
+    __tablename__ = "flow_copies"
+    __table_args__ = (
+        UniqueConstraint("user_id", "flow_id", "billing_month", name="uq_copy_user_flow_month"),
+    )
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+    user_id: str = Field(foreign_key="users.id", index=True)
+    flow_id: str = Field(foreign_key="prompts.id", index=True)
+    creator_id: str = Field(index=True, description="Denormalized for faster aggregation")
+
+    counted_for_payout: bool = Field(default=False, description="Whether this copy counts toward creator payout")
+    copied_at: datetime = Field(default_factory=datetime.utcnow)
+    billing_month: datetime = Field(description="First day of billing month (YYYY-MM-01)")
+
+
+class CreatorPayout(SQLModel, table=True):
+    """Monthly aggregated payouts for creators."""
+
+    __tablename__ = "creator_payouts"
+    __table_args__ = (
+        UniqueConstraint("creator_id", "billing_month", name="uq_payout_creator_month"),
+    )
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+    creator_id: str = Field(foreign_key="users.id", index=True)
+    billing_month: datetime = Field(description="First day of billing month (YYYY-MM-01)")
+
+    copy_count: int = Field(default=0)
+    amount_cents: int = Field(default=0, description="copy_count * 7 cents")
+
+    status: str = Field(default="pending", max_length=20)  # pending, processing, paid, failed
+    stripe_transfer_id: str | None = Field(default=None)
+    paid_at: datetime | None = Field(default=None)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)

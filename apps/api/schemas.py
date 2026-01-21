@@ -343,3 +343,127 @@ class OAuthStartResponse(BaseModel):
 
 class TokenData(BaseModel):
     email: str | None = None
+
+
+# Subscription Schemas
+
+class SubscriptionCreate(BaseModel):
+    """Schema for creating a subscription via Stripe."""
+    stripe_subscription_id: str = Field(description="Stripe subscription ID")
+    stripe_customer_id: str = Field(description="Stripe customer ID")
+    status: str = Field(description="Subscription status")
+    plan_id: str = Field(default="premium_monthly")
+    current_period_start: datetime
+    current_period_end: datetime
+
+
+class SubscriptionRead(BaseModel):
+    """Schema for reading subscription info."""
+    id: str
+    user_id: str
+    stripe_subscription_id: str
+    status: str
+    plan_id: str
+    current_period_start: datetime
+    current_period_end: datetime
+    cancel_at_period_end: bool
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class SubscriptionStatusResponse(BaseModel):
+    """Response showing user's subscription status."""
+    is_subscriber: bool
+    subscription: SubscriptionRead | None = None
+    copies_remaining: int = Field(default=100, description="Copies remaining in billing period")
+
+
+# Copy Tracking Schemas
+
+class FlowCopyRequest(BaseModel):
+    """Request to record a Flow copy."""
+    flow_id: str = Field(description="ID of the Flow being copied")
+
+
+class FlowCopyResponse(BaseModel):
+    """Response after recording a copy."""
+    id: str
+    user_id: str
+    flow_id: str
+    copied_at: datetime
+    copies_this_month: int = Field(description="Total copies by this user this month")
+    copies_remaining: int = Field(description="Copies remaining this month")
+    payout_earned: int = Field(description="Cents paid to creator for this copy (7 or 0)")
+
+    class Config:
+        from_attributes = True
+
+
+class FlowCopyRead(BaseModel):
+    """Schema for reading Flow copy events."""
+    id: str
+    user_id: str
+    flow_id: str
+    creator_id: str
+    counted_for_payout: bool
+    copied_at: datetime
+    billing_month: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Creator Payout Schemas
+
+class CreatorPayoutRead(BaseModel):
+    """Schema for reading creator payout info."""
+    id: str
+    creator_id: str
+    billing_month: datetime
+    copy_count: int
+    amount_cents: int
+    status: str
+    stripe_transfer_id: str | None = None
+    paid_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class CreatorEarningsResponse(BaseModel):
+    """Response showing creator's earnings for a billing month."""
+    billing_month: datetime
+    copy_count: int
+    amount_cents: int
+    amount_dollars: float
+    status: str
+    paid_at: datetime | None = None
+
+
+class CreatorAccountResponse(BaseModel):
+    """Response showing creator account balance and settings."""
+    user_id: str
+    is_creator: bool
+    account_balance_cents: int = Field(description="Cumulative balance on account")
+    account_balance_dollars: float
+    total_earnings_cents: int = Field(description="All-time earnings")
+    total_earnings_dollars: float
+    monthly_earnings: list[CreatorEarningsResponse]
+
+
+# User Extensions
+
+class UserReadWithBalance(UserRead):
+    """Extended user info including subscription and creator balance."""
+    is_creator: bool = False
+    stripe_customer_id: str | None = None
+    subscription: SubscriptionRead | None = None
+    creator_account: CreatorAccountResponse | None = None
+
+    class Config:
+        from_attributes = True

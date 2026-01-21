@@ -93,7 +93,11 @@ export async function fetchPrompts(
     }
 
     if (params.type) {
-      filtered = filtered.filter((p) => p.type === params.type);
+      filtered = filtered.filter((p) => {
+        // Strict check: if a type is requested, it must match exactly.
+        // Also handling cases where type might be missing in mock data (shoudn't happen with Prompt interface).
+        return p.type === params.type;
+      });
     }
 
     return {

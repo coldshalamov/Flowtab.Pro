@@ -34,6 +34,11 @@ class Settings(BaseSettings):
     # Stripe settings
     stripe_secret_key: str | None = None
     stripe_webhook_secret: str | None = None
+    stripe_premium_price_id: str | None = None  # Price ID for $10/month subscription
+    stripe_publishable_key: str | None = None
+
+    # Frontend settings (for redirects)
+    frontend_url: str = "http://localhost:3000"
 
     # Exact-match allowlist of redirect URIs we will accept in OAuth flows.
     # Comma-separated list.

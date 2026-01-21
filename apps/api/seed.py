@@ -50,6 +50,16 @@ def main() -> None:
                 session.commit()
                 logger.info(f"👑 Promoted existing user to superuser: {existing_admin.username}")
 
+        # Clear existing discussions (threads) if any, per user request to have an empty community
+        from apps.api.models import Prompt
+        from sqlmodel import delete
+        
+        # Delete all prompts with type="discussion"
+        statement = delete(Prompt).where(Prompt.type == "discussion")
+        session.exec(statement)
+        session.commit()
+        logger.info("🗑️ Cleared existing community threads (discussions)")
+
         # List of example prompts to seed
         # These are synced with the high-quality mock data used in the frontend
         prompts_data = [

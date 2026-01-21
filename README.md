@@ -1,8 +1,19 @@
 # Flowtab.Pro
 
-**A searchable library of automated browser prompt flows for Playwright, Opera Neon, ChatGPT, Atlas, and Manis.**
+**A community-driven marketplace for browser automation Flows with creator revenue sharing.**
 
-Flowtab.Pro helps developers and automation engineers discover, share, and reuse battle-tested browser automation workflows. Browse prompts, filter by tools, and copy ready-to-use flows directly into your projects.
+Flowtab.Pro helps developers and automation engineers discover, share, and monetize battle-tested browser automation workflows. Premium subscribers get one-click access to the full library, while creators earn revenue based on actual usage of their Flows.
+
+## 💰 Monetization Model
+
+Flowtab.Pro operates on a **subscription + revenue sharing** model:
+
+- **Premium Subscription:** $10/month for full library access
+- **Creator Revenue Share:** 70% of subscription revenue distributed based on usage
+- **Creator Earnings:** $0.07 per qualifying copy (first 100 copies/user/month)
+- **Self-Balancing:** 100-copy monthly cap ensures revenue = payouts + 30% platform fee
+
+See [MONETIZATION.md](MONETIZATION.md) for detailed economic model and revenue projections.
 
 ---
 
@@ -145,6 +156,9 @@ pytest --cov=.  # With coverage
 
 ## 📖 Documentation
 
+- **Monetization Model:** [MONETIZATION.md](MONETIZATION.md) - Economic model and revenue projections
+- **Subscription Architecture:** [docs/SUBSCRIPTION_ARCHITECTURE.md](docs/SUBSCRIPTION_ARCHITECTURE.md) - Technical implementation
+- **Creator Guide:** [CREATOR_GUIDE.md](CREATOR_GUIDE.md) - How to create and monetize Flows
 - **Frontend README:** `apps/web/README.md`
 - **Backend README:** `apps/api/README.md`
 - **API Contract:** `contracts/openapi.yaml`

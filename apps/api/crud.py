@@ -14,7 +14,10 @@ from sqlalchemy import String, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import cast
 
-from apps.api.models import Prompt, User, Comment, Like
+from apps.api.models import (
+    Prompt, User, Comment, Like, Subscription,
+    FlowCopy, CreatorPayout, Save
+)
 from apps.api.schemas import PromptCreate, UserCreate
 
 
@@ -158,7 +161,6 @@ def get_prompts(
                 Prompt.title.ilike(search_pattern),
                 Prompt.summary.ilike(search_pattern),
                 Prompt.promptText.ilike(search_pattern),
-            )
             )
         )
 
@@ -451,3 +453,227 @@ def unsave_prompt(session: Session, *, user_id: str, prompt_id: str) -> bool:
     session.delete(save)
     session.commit()
     return True
+
+
+# Subscription CRUD
+
+def get_subscription_by_user(session: Session, user_id: str) -> Subscription | None:
+    """Get subscription for a user."""
+    statement = select(Subscription).where(Subscription.user_id == user_id)
+    return session.exec(statement).first()
+
+
+def get_subscription_by_stripe_id(session: Session, stripe_id: str) -> Subscription | None:
+    """Get subscription by Stripe subscription ID."""
+    statement = select(Subscription).where(
+        Subscription.stripe_subscription_id == stripe_id
+    )
+    return session.exec(statement).first()
+
+
+def create_or_update_subscription(
+    session: Session,
+    user_id: str,
+    stripe_subscription_id: str,
+    stripe_customer_id: str,
+    status: str,
+    current_period_start: datetime,
+    current_period_end: datetime,
+    plan_id: str = "premium_monthly",
+) -> Subscription:
+    """Create or update a subscription."""
+    subscription = get_subscription_by_user(session, user_id)
+
+    if subscription:
+        subscription.stripe_subscription_id = stripe_subscription_id
+        subscription.stripe_customer_id = stripe_customer_id
+        subscription.status = status
+        subscription.current_period_start = current_period_start
+        subscription.current_period_end = current_period_end
+        subscription.plan_id = plan_id
+        subscription.updated_at = datetime.utcnow()
+    else:
+        subscription = Subscription(
+            user_id=user_id,
+            stripe_subscription_id=stripe_subscription_id,
+            stripe_customer_id=stripe_customer_id,
+            status=status,
+            plan_id=plan_id,
+            current_period_start=current_period_start,
+            current_period_end=current_period_end,
+        )
+
+    session.add(subscription)
+    session.commit()
+    session.refresh(subscription)
+    return subscription
+
+
+def cancel_subscription(session: Session, subscription_id: str) -> Subscription:
+    """Cancel a subscription."""
+    statement = select(Subscription).where(Subscription.id == subscription_id)
+    subscription = session.exec(statement).first()
+
+    if subscription:
+        subscription.status = "canceled"
+        subscription.cancel_at_period_end = True
+        subscription.updated_at = datetime.utcnow()
+        session.add(subscription)
+        session.commit()
+        session.refresh(subscription)
+
+    return subscription
+
+
+# Flow Copy CRUD
+
+def get_billing_month_start(date: datetime | None = None) -> datetime:
+    """Get first day of billing month for a given date (or today)."""
+    if date is None:
+        date = datetime.utcnow()
+    return datetime(date.year, date.month, 1)
+
+
+def count_copies_this_month(session: Session, user_id: str) -> int:
+    """Count total copies a user has made this month."""
+    billing_month = get_billing_month_start()
+    statement = select(func.count(FlowCopy.id)).where(
+        FlowCopy.user_id == user_id,
+        FlowCopy.billing_month == billing_month,
+        FlowCopy.counted_for_payout == True
+    )
+    return session.exec(statement).one() or 0
+
+
+def get_copies_this_month(
+    session: Session, user_id: str, billing_month: datetime | None = None
+) -> list[FlowCopy]:
+    """Get all copies made by user this month."""
+    if billing_month is None:
+        billing_month = get_billing_month_start()
+
+    statement = select(FlowCopy).where(
+        FlowCopy.user_id == user_id,
+        FlowCopy.billing_month == billing_month
+    )
+    return list(session.exec(statement).all())
+
+
+def has_copied_this_month(
+    session: Session, user_id: str, flow_id: str
+) -> bool:
+    """Check if user has already copied this flow this month."""
+    billing_month = get_billing_month_start()
+    statement = select(FlowCopy).where(
+        FlowCopy.user_id == user_id,
+        FlowCopy.flow_id == flow_id,
+        FlowCopy.billing_month == billing_month
+    )
+    return session.exec(statement).first() is not None
+
+
+def record_flow_copy(
+    session: Session,
+    user_id: str,
+    flow_id: str,
+    creator_id: str,
+    counted_for_payout: bool = False,
+) -> FlowCopy:
+    """Record a flow copy event (append-only log)."""
+    billing_month = get_billing_month_start()
+
+    # Check if already copied
+    if has_copied_this_month(session, user_id, flow_id):
+        raise ValueError(
+            f"User {user_id} has already copied Flow {flow_id} this month"
+        )
+
+    copy = FlowCopy(
+        user_id=user_id,
+        flow_id=flow_id,
+        creator_id=creator_id,
+        billing_month=billing_month,
+        counted_for_payout=counted_for_payout,
+    )
+
+    session.add(copy)
+    session.commit()
+    session.refresh(copy)
+    return copy
+
+
+def get_flow_copy_by_id(session: Session, copy_id: str) -> FlowCopy | None:
+    """Get a flow copy by ID."""
+    statement = select(FlowCopy).where(FlowCopy.id == copy_id)
+    return session.exec(statement).first()
+
+
+# Creator Payout CRUD
+
+def get_or_create_payout(
+    session: Session, creator_id: str, billing_month: datetime
+) -> CreatorPayout:
+    """Get or create a payout record for a creator."""
+    statement = select(CreatorPayout).where(
+        CreatorPayout.creator_id == creator_id,
+        CreatorPayout.billing_month == billing_month
+    )
+    payout = session.exec(statement).first()
+
+    if not payout:
+        payout = CreatorPayout(
+            creator_id=creator_id,
+            billing_month=billing_month,
+        )
+        session.add(payout)
+        session.commit()
+        session.refresh(payout)
+
+    return payout
+
+
+def get_payouts_for_creator(
+    session: Session, creator_id: str, limit: int = 12
+) -> list[CreatorPayout]:
+    """Get recent payouts for a creator."""
+    statement = (
+        select(CreatorPayout)
+        .where(CreatorPayout.creator_id == creator_id)
+        .order_by(CreatorPayout.billing_month.desc())
+        .limit(limit)
+    )
+    return list(session.exec(statement).all())
+
+
+def update_payout_status(
+    session: Session,
+    payout_id: str,
+    status: str,
+    stripe_transfer_id: str | None = None,
+) -> CreatorPayout:
+    """Update payout status."""
+    statement = select(CreatorPayout).where(CreatorPayout.id == payout_id)
+    payout = session.exec(statement).first()
+
+    if payout:
+        payout.status = status
+        if stripe_transfer_id:
+            payout.stripe_transfer_id = stripe_transfer_id
+        if status == "paid":
+            payout.paid_at = datetime.utcnow()
+        payout.updated_at = datetime.utcnow()
+        session.add(payout)
+        session.commit()
+        session.refresh(payout)
+
+    return payout
+
+
+def get_total_earnings(session: Session, creator_id: str) -> int:
+    """Get total earnings in cents for a creator (from paid payouts)."""
+    statement = select(func.sum(CreatorPayout.amount_cents)).where(
+        CreatorPayout.creator_id == creator_id,
+        CreatorPayout.status == "paid"
+    )
+    total = session.exec(statement).one()
+    return total or 0
