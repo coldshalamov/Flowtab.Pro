@@ -3,8 +3,9 @@
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { submitPrompt } from "@/lib/api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 
 interface ThreadForm {
     title: string;
@@ -15,7 +16,14 @@ interface ThreadForm {
 
 export default function NewThreadPage() {
     const router = useRouter();
+    const { user, isLoading } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!isLoading && !user) {
+            router.push("/login?redirect=/forum/new");
+        }
+    }, [isLoading, user, router]);
 
     const {
         register,
@@ -24,6 +32,11 @@ export default function NewThreadPage() {
     } = useForm<ThreadForm>();
 
     const onSubmit = async (data: ThreadForm) => {
+        if (!user) {
+            router.push("/login?redirect=/forum/new");
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             const success = await submitPrompt({
@@ -43,12 +56,24 @@ export default function NewThreadPage() {
                 router.push("/forum");
                 router.refresh();
             } else {
-                alert("Failed to create thread. Please try again.");
+                alert("Failed to create thread. You may need to log in again.");
             }
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
+                <Loader2 className="animate-spin text-blue-500" size={32} />
+            </div>
+        );
+    }
+
+    if (!user) {
+        return null; // Will redirect via useEffect
+    }
 
     return (
         <div className="min-h-screen bg-black text-white p-4">
