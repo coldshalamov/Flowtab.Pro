@@ -68,3 +68,12 @@ def health_check() -> dict[str, str]:
 
 # Include API router
 app.include_router(router)
+
+# Include connections router if available
+try:
+    from apps.api.connections_routes import router as connections_router
+    app.include_router(connections_router)
+except ImportError:
+    # Connections router not available, skip
+    pass
+

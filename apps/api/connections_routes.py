@@ -7,17 +7,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
-from db import get_session
-from auth import get_current_user
-from models import User, Provider
-from schemas import (
+from apps.api.db import get_session
+from apps.api.auth import get_current_user
+from apps.api.models import User, Provider
+from apps.api.schemas import (
     ProviderRead,
     ConnectionCreate,
     ConnectionRead,
     ConnectionListResponse,
     ErrorResponse,
 )
-from connections_crud import (
+from apps.api.connections_crud import (
     get_providers,
     get_user_connections,
     get_connection_by_id,

@@ -1823,7 +1823,5 @@ def start_stripe_connect_onboarding(
 # CONNECTION MANAGER ENDPOINTS
 # ============================================================================
 
-from connections_routes import router as connections_router
+# Connection manager routes are imported and included in main.py
 
-# Include connections router
-app.include_router(connections_router)
