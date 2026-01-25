@@ -20,11 +20,22 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+
 def upgrade() -> None:
-    op.add_column("prompts", sa.Column("author_id", sa.String(), nullable=True))
-    op.create_foreign_key(None, "prompts", "users", ["author_id"], ["id"])
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    columns = [c['name'] for c in inspector.get_columns("prompts")]
+    
+    if "author_id" not in columns:
+        op.add_column("prompts", sa.Column("author_id", sa.String(), nullable=True))
+        op.create_foreign_key(None, "prompts", "users", ["author_id"], ["id"])
 
 
 def downgrade() -> None:
-    op.drop_constraint(None, "prompts", type_="foreignkey")
-    op.drop_column("prompts", "author_id")
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    columns = [c['name'] for c in inspector.get_columns("prompts")]
+    
+    if "author_id" in columns:
+        op.drop_constraint(None, "prompts", type_="foreignkey")
+        op.drop_column("prompts", "author_id")

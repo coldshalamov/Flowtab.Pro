@@ -21,11 +21,9 @@ class Prompt(SQLModel, table=True):
     title: str = Field(max_length=500)
 
     summary: str = Field()
-    
+
     # Type: 'prompt' or 'discussion'
     type: str = Field(default="prompt", index=True, max_length=20)
-
-
 
     # JSON fields for arrays - using SQLAlchemy Column with JSON type
     worksWith: list[str] = Field(
@@ -74,7 +72,9 @@ class Prompt(SQLModel, table=True):
     saves_count: int = Field(default=0, description="Number of bookmarks")
 
     # Subscription fields
-    is_premium: bool = Field(default=True, description="Whether this Flow requires premium subscription")
+    is_premium: bool = Field(
+        default=True, description="Whether this Flow requires premium subscription"
+    )
     featured: bool = Field(default=False, description="Show in free tier preview")
     total_copies: int = Field(default=0, description="Cached total copy count")
 
@@ -194,17 +194,25 @@ class User(SQLModel, table=True):
     comments: list["Comment"] = Relationship(back_populates="author")
 
     # Subscription fields
-    stripe_customer_id: str | None = Field(default=None, index=True, description="Stripe Customer ID for subscriptions")
-    is_creator: bool = Field(default=False, description="Whether the user is a content creator")
+    stripe_customer_id: str | None = Field(
+        default=None, index=True, description="Stripe Customer ID for subscriptions"
+    )
+    is_creator: bool = Field(
+        default=False, description="Whether the user is a content creator"
+    )
 
     # Marketplace fields (creator payouts)
-    stripe_connect_id: str | None = Field(default=None, index=True, description="Stripe Connect Account ID")
-    is_seller: bool = Field(default=False, description="Whether the user has enabled selling")
+    stripe_connect_id: str | None = Field(
+        default=None, index=True, description="Stripe Connect Account ID"
+    )
+    is_seller: bool = Field(
+        default=False, description="Whether the user has enabled selling"
+    )
 
 
 class Save(SQLModel, table=True):
     """A user's bookmark of a prompt."""
-    
+
     __tablename__ = "saves"
     __table_args__ = (
         UniqueConstraint("user_id", "prompt_id", name="uq_save_user_prompt"),
@@ -237,7 +245,9 @@ class Purchase(SQLModel, table=True):
     currency: str = Field(default="usd", max_length=3)
 
     stripe_payment_intent_id: str = Field(index=True)
-    status: str = Field(default="pending", index=True) # pending, paid, failed, refunded
+    status: str = Field(
+        default="pending", index=True
+    )  # pending, paid, failed, refunded
 
     createdAt: datetime = Field(default_factory=datetime.utcnow)
 
@@ -276,7 +286,9 @@ class FlowCopy(SQLModel, table=True):
 
     __tablename__ = "flow_copies"
     __table_args__ = (
-        UniqueConstraint("user_id", "flow_id", "billing_month", name="uq_copy_user_flow_month"),
+        UniqueConstraint(
+            "user_id", "flow_id", "billing_month", name="uq_copy_user_flow_month"
+        ),
     )
 
     id: str = Field(
@@ -285,11 +297,17 @@ class FlowCopy(SQLModel, table=True):
     )
     user_id: str = Field(foreign_key="users.id", index=True)
     flow_id: str = Field(foreign_key="prompts.id", index=True)
-    creator_id: str = Field(index=True, description="Denormalized for faster aggregation")
+    creator_id: str = Field(
+        index=True, description="Denormalized for faster aggregation"
+    )
 
-    counted_for_payout: bool = Field(default=False, description="Whether this copy counts toward creator payout")
+    counted_for_payout: bool = Field(
+        default=False, description="Whether this copy counts toward creator payout"
+    )
     copied_at: datetime = Field(default_factory=datetime.utcnow)
-    billing_month: datetime = Field(description="First day of billing month (YYYY-MM-01)")
+    billing_month: datetime = Field(
+        description="First day of billing month (YYYY-MM-01)"
+    )
 
 
 class CreatorPayout(SQLModel, table=True):
@@ -305,14 +323,132 @@ class CreatorPayout(SQLModel, table=True):
         primary_key=True,
     )
     creator_id: str = Field(foreign_key="users.id", index=True)
-    billing_month: datetime = Field(description="First day of billing month (YYYY-MM-01)")
+    billing_month: datetime = Field(
+        description="First day of billing month (YYYY-MM-01)"
+    )
 
     copy_count: int = Field(default=0)
     amount_cents: int = Field(default=0, description="copy_count * 7 cents")
 
-    status: str = Field(default="pending", max_length=20)  # pending, processing, paid, failed
+    status: str = Field(
+        default="pending", max_length=20
+    )  # pending, processing, paid, failed
     stripe_transfer_id: str | None = Field(default=None)
     paid_at: datetime | None = Field(default=None)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# Connection Manager Models
+
+
+class Provider(SQLModel, table=True):
+    """AI provider configuration and capabilities."""
+
+    __tablename__ = "providers"
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+
+    name: str = Field(unique=True, max_length=100, index=True)
+    slug: str = Field(unique=True, max_length=100, index=True)
+    display_name: str = Field(max_length=100)
+
+    # Provider capabilities
+    supports_api_key: bool = Field(default=True)
+    supports_oauth: bool = Field(default=False)
+    supports_manual: bool = Field(default=True)
+
+    # API configuration
+    api_endpoint: str | None = Field(default=None, max_length=500)
+    auth_type: str = Field(default="api_key", max_length=50)  # api_key, oauth, manual
+
+    # Provider metadata
+    description: str | None = Field(default=None, max_length=500)
+    documentation_url: str | None = Field(default=None, max_length=500)
+
+    # Rate limiting
+    rate_limit_per_minute: int | None = Field(default=None)
+    rate_limit_per_hour: int | None = Field(default=None)
+
+    is_active: bool = Field(default=True)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class AccountConnection(SQLModel, table=True):
+    """User's connection to an AI provider."""
+
+    __tablename__ = "account_connections"
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+
+    user_id: str = Field(foreign_key="users.id", index=True)
+    provider_id: str = Field(foreign_key="providers.id", index=True)
+
+    label: str = Field(
+        max_length=100, description="User-defined label for this connection"
+    )
+    connection_type: str = Field(max_length=50, index=True)  # api_key, oauth, manual
+
+    # Status tracking
+    status: str = Field(
+        default="active", max_length=50, index=True
+    )  # active, inactive, error
+
+    # Last usage tracking
+    last_used_at: datetime | None = Field(default=None)
+    last_error: str | None = Field(default=None, max_length=500)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class CredentialVaultItem(SQLModel, table=True):
+    """Encrypted credential storage for API connections."""
+
+    __tablename__ = "credential_vault_items"
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+
+    connection_id: str = Field(foreign_key="account_connections.id", index=True)
+
+    # Encrypted data (format: iv:auth_tag:encrypted_content)
+    encrypted_data: str = Field()
+
+    # Metadata
+    key_name: str = Field(
+        max_length=100, description="Name of the credential key (e.g., 'api_key')"
+    )
+
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ManualOverride(SQLModel, table=True):
+    """Manual configuration overrides for provider connections."""
+
+    __tablename__ = "manual_overrides"
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+
+    connection_id: str = Field(foreign_key="account_connections.id", index=True)
+
+    # JSON configuration for manual overrides
+    config: dict = Field(default_factory=dict, sa_column=Column(JSON))
 
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

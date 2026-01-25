@@ -20,25 +20,34 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+
 def upgrade() -> None:
-    op.create_table(
-        "users",
-        sa.Column("id", sa.String(), nullable=False),
-        sa.Column("email", sa.String(length=255), nullable=False),
-        sa.Column("hashed_password", sa.String(), nullable=False),
-        sa.Column("is_active", sa.Boolean(), nullable=False),
-        sa.Column("is_superuser", sa.Boolean(), nullable=False),
-        sa.Column(
-            "createdAt",
-            sa.DateTime(),
-            server_default=sa.text("CURRENT_TIMESTAMP"),
-            nullable=False,
-        ),
-        sa.PrimaryKeyConstraint("id"),
-    )
-    op.create_index(op.f("ix_users_email"), "users", ["email"], unique=True)
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    
+    if not inspector.has_table("users"):
+        op.create_table(
+            "users",
+            sa.Column("id", sa.String(), nullable=False),
+            sa.Column("email", sa.String(length=255), nullable=False),
+            sa.Column("hashed_password", sa.String(), nullable=False),
+            sa.Column("is_active", sa.Boolean(), nullable=False),
+            sa.Column("is_superuser", sa.Boolean(), nullable=False),
+            sa.Column(
+                "createdAt",
+                sa.DateTime(),
+                server_default=sa.text("CURRENT_TIMESTAMP"),
+                nullable=False,
+            ),
+            sa.PrimaryKeyConstraint("id"),
+        )
+        op.create_index(op.f("ix_users_email"), "users", ["email"], unique=True)
 
 
 def downgrade() -> None:
-    op.drop_index(op.f("ix_users_email"), table_name="users")
-    op.drop_table("users")
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    
+    if inspector.has_table("users"):
+        op.drop_index(op.f("ix_users_email"), table_name="users")
+        op.drop_table("users")

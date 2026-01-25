@@ -33,8 +33,6 @@ class PromptCreate(BaseModel):
         min_length=1,
     )
 
-
-
     worksWith: list[str] = Field(
         default_factory=list,
         description="List of compatible tools/browsers",
@@ -54,7 +52,7 @@ class PromptCreate(BaseModel):
         description="The actual prompt text to be used",
         min_length=1,
     )
-    
+
     type: Literal["prompt", "discussion"] = Field(
         default="prompt",
         description="Type of content: 'prompt' or 'discussion'",
@@ -110,10 +108,8 @@ class PromptRead(BaseModel):
     title: str = Field(description="Human-readable title of the prompt")
 
     summary: str = Field(description="Brief description of what the prompt does")
-    
+
     type: str = Field(description="Type of content")
-
-
 
     worksWith: list[str] = Field(
         description="List of compatible tools/browsers",
@@ -289,7 +285,9 @@ class ValidationError(ErrorResponse):
 
 
 class UserBase(BaseModel):
-    username: str = Field(description="Unique username for display and login", min_length=3, max_length=50)
+    username: str = Field(
+        description="Unique username for display and login", min_length=3, max_length=50
+    )
 
 
 class UserCreate(UserBase):
@@ -347,8 +345,10 @@ class TokenData(BaseModel):
 
 # Subscription Schemas
 
+
 class SubscriptionCreate(BaseModel):
     """Schema for creating a subscription via Stripe."""
+
     stripe_subscription_id: str = Field(description="Stripe subscription ID")
     stripe_customer_id: str = Field(description="Stripe customer ID")
     status: str = Field(description="Subscription status")
@@ -359,6 +359,7 @@ class SubscriptionCreate(BaseModel):
 
 class SubscriptionRead(BaseModel):
     """Schema for reading subscription info."""
+
     id: str
     user_id: str
     stripe_subscription_id: str
@@ -376,27 +377,35 @@ class SubscriptionRead(BaseModel):
 
 class SubscriptionStatusResponse(BaseModel):
     """Response showing user's subscription status."""
+
     is_subscriber: bool
     subscription: SubscriptionRead | None = None
-    copies_remaining: int = Field(default=100, description="Copies remaining in billing period")
+    copies_remaining: int = Field(
+        default=100, description="Copies remaining in billing period"
+    )
 
 
 # Copy Tracking Schemas
 
+
 class FlowCopyRequest(BaseModel):
     """Request to record a Flow copy."""
+
     flow_id: str = Field(description="ID of the Flow being copied")
 
 
 class FlowCopyResponse(BaseModel):
     """Response after recording a copy."""
+
     id: str
     user_id: str
     flow_id: str
     copied_at: datetime
     copies_this_month: int = Field(description="Total copies by this user this month")
     copies_remaining: int = Field(description="Copies remaining this month")
-    payout_earned: int = Field(description="Cents paid to creator for this copy (7 or 0)")
+    payout_earned: int = Field(
+        description="Cents paid to creator for this copy (7 or 0)"
+    )
 
     class Config:
         from_attributes = True
@@ -404,6 +413,7 @@ class FlowCopyResponse(BaseModel):
 
 class FlowCopyRead(BaseModel):
     """Schema for reading Flow copy events."""
+
     id: str
     user_id: str
     flow_id: str
@@ -418,8 +428,10 @@ class FlowCopyRead(BaseModel):
 
 # Creator Payout Schemas
 
+
 class CreatorPayoutRead(BaseModel):
     """Schema for reading creator payout info."""
+
     id: str
     creator_id: str
     billing_month: datetime
@@ -437,6 +449,7 @@ class CreatorPayoutRead(BaseModel):
 
 class CreatorEarningsResponse(BaseModel):
     """Response showing creator's earnings for a billing month."""
+
     billing_month: datetime
     copy_count: int
     amount_cents: int
@@ -447,6 +460,7 @@ class CreatorEarningsResponse(BaseModel):
 
 class CreatorAccountResponse(BaseModel):
     """Response showing creator account balance and settings."""
+
     user_id: str
     is_creator: bool
     account_balance_cents: int = Field(description="Cumulative balance on account")
@@ -458,8 +472,10 @@ class CreatorAccountResponse(BaseModel):
 
 # User Extensions
 
+
 class UserReadWithBalance(UserRead):
     """Extended user info including subscription and creator balance."""
+
     is_creator: bool = False
     stripe_customer_id: str | None = None
     subscription: SubscriptionRead | None = None
@@ -467,3 +483,77 @@ class UserReadWithBalance(UserRead):
 
     class Config:
         from_attributes = True
+
+
+# Connection Manager Schemas
+
+
+class ProviderRead(BaseModel):
+    """Schema for reading provider information."""
+
+    id: str
+    name: str
+    slug: str
+    display_name: str
+    description: str | None = None
+    api_endpoint: str | None = None
+    auth_type: str
+    supports_api_key: bool
+    supports_oauth: bool
+    supports_manual: bool
+    rate_limit_per_minute: int | None = None
+    rate_limit_per_hour: int | None = None
+    documentation_url: str | None = None
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
+class ConnectionCreate(BaseModel):
+    """Schema for creating a new connection."""
+
+    provider_id: str = Field(description="ID of the provider to connect to")
+    label: str = Field(
+        min_length=1,
+        max_length=100,
+        description="User-defined label for this connection",
+    )
+    connection_type: str = Field(
+        pattern="^(api_key|oauth|manual)$",
+        description="Type of connection: api_key, oauth, or manual",
+    )
+    credentials: dict | None = Field(
+        default=None,
+        description="API credentials (e.g., {'api_key': 'sk-...'}). Will be encrypted.",
+    )
+    manual_config: dict | None = Field(
+        default=None, description="Manual configuration overrides"
+    )
+
+
+class ConnectionRead(BaseModel):
+    """Schema for reading connection information (without credentials)."""
+
+    id: str
+    user_id: str
+    provider_id: str
+    label: str
+    connection_type: str
+    status: str
+    last_used_at: datetime | None = None
+    last_error: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+    # Nested provider info (optional, populated by controller)
+    provider: ProviderRead | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class ConnectionListResponse(BaseModel):
+    """Schema for paginated list of user connections."""
+
+    items: list[ConnectionRead]

@@ -807,7 +807,6 @@ def list_prompts(
     tags: str | None = Query(
         default=None, description="Comma-separated list of tags to filter by"
     ),
-
     worksWith: str | None = Query(
         default=None, description="Comma-separated list of tools to filter by"
     ),
@@ -1340,6 +1339,8 @@ def delete_existing_prompt(
             message="An unexpected error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
 @router.patch(
     "/prompts/{slug}",
     response_model=PromptRead,
@@ -1403,13 +1404,15 @@ def save_prompt_endpoint(
 
     # Use 'save_prompt' from crud (ensure it is imported)
     from apps.api.crud import save_prompt as crud_save_prompt
-    
-    was_saved = crud_save_prompt(session=session, user_id=current_user.id, prompt_id=prompt.id)
+
+    was_saved = crud_save_prompt(
+        session=session, user_id=current_user.id, prompt_id=prompt.id
+    )
     if was_saved:
         prompt.saves_count += 1
         session.add(prompt)
         session.commit()
-    
+
     return {"liked": True, "likeCount": prompt.saves_count}
 
 
@@ -1431,19 +1434,22 @@ def unsave_prompt_endpoint(
             message=f"Prompt '{slug}' not found",
             status_code=404,
         )
-        
+
     from apps.api.crud import unsave_prompt as crud_unsave_prompt
-    
-    was_unsaved = crud_unsave_prompt(session=session, user_id=current_user.id, prompt_id=prompt.id)
+
+    was_unsaved = crud_unsave_prompt(
+        session=session, user_id=current_user.id, prompt_id=prompt.id
+    )
     if was_unsaved:
         prompt.saves_count = max(0, prompt.saves_count - 1)
         session.add(prompt)
         session.commit()
-    
+
     return {"liked": False, "likeCount": prompt.saves_count}
 
 
 # --- Stripe / Marketplace Endpoints ---
+
 
 @router.post("/stripe/connect", tags=["marketplace"])
 def connect_stripe_account(
@@ -1452,14 +1458,14 @@ def connect_stripe_account(
 ) -> dict | JSONResponse:
     """Create a Stripe Express account for the user and return onboarding link."""
     if not settings.stripe_secret_key:
-         return error_response(
+        return error_response(
             error="Server misconfigured",
             message="Stripe is not configured on this server.",
-            status_code=500
+            status_code=500,
         )
 
     from apps.api.stripe_utils import stripe_client
-    
+
     # Create account if doesn't exist
     if not current_user.stripe_connect_id:
         try:
@@ -1470,7 +1476,7 @@ def connect_stripe_account(
             session.refresh(current_user)
         except Exception as e:
             return error_response(error="Stripe Error", message=str(e), status_code=500)
-    
+
     # Generate link
     try:
         # TODO: Update return URLs to real frontend routes
@@ -1481,7 +1487,8 @@ def connect_stripe_account(
         )
         return {"url": link.url}
     except Exception as e:
-            return error_response(error="Stripe Error", message=str(e), status_code=500)
+        return error_response(error="Stripe Error", message=str(e), status_code=500)
+
 
 @router.post("/prompts/{slug}/buy", tags=["marketplace"])
 def buy_prompt(
@@ -1491,47 +1498,54 @@ def buy_prompt(
 ) -> dict | JSONResponse:
     """Create a payment intent to purchase a prompt."""
     if not settings.stripe_secret_key:
-         return error_response(
+        return error_response(
             error="Server misconfigured",
             message="Stripe is not configured on this server.",
-            status_code=500
+            status_code=500,
         )
-        
+
     prompt = get_prompt_by_slug(session=session, slug=slug)
     if not prompt:
-        return error_response(error="Not found", message="Prompt not found", status_code=404)
-        
+        return error_response(
+            error="Not found", message="Prompt not found", status_code=404
+        )
+
     if prompt.price <= 0:
-        return error_response(error="Bad Request", message="This prompt is free.", status_code=400)
-        
+        return error_response(
+            error="Bad Request", message="This prompt is free.", status_code=400
+        )
+
     seller = session.get(User, prompt.author_id)
     if not seller or not seller.stripe_connect_id:
-         return error_response(error="d", message="Seller not setup for payments.", status_code=400)
-         
+        return error_response(
+            error="d", message="Seller not setup for payments.", status_code=400
+        )
+
     # Check if already purchased
     # existing = session.exec(select(Purchase).where(Purchase.buyer_id == current_user.id, Purchase.prompt_id == prompt.id)).first()
     # if existing: ... (Optional: allow re-purchase or block)
 
     # Calculate 10% fee
     platform_fee = int(prompt.price * 0.10)
-    
+
     from apps.api.stripe_utils import stripe_client
+
     try:
         intent = stripe_client.create_payment_intent(
             amount_cents=prompt.price,
             currency=prompt.currency,
             seller_account_id=seller.stripe_connect_id,
-            platform_fee_cents=platform_fee
+            platform_fee_cents=platform_fee,
         )
-        
+
         # Record pending purchase? Or wait for webhook?
         # Typically we wait for webhook, but we can store intent ID to verify later.
-        
+
         return {
             "clientSecret": intent.client_secret,
-            "publishableKey": "pk_test_placeholder", # TODO: Add to settings if needed
+            "publishableKey": "pk_test_placeholder",  # TODO: Add to settings if needed
             "amount": prompt.price,
-            "currency": prompt.currency
+            "currency": prompt.currency,
         }
     except Exception as e:
         return error_response(error="Stripe Error", message=str(e), status_code=500)
@@ -1540,6 +1554,7 @@ def buy_prompt(
 # ============================================================================
 # MONETIZATION ENDPOINTS (Subscriptions, Copy Tracking, Creator Features)
 # ============================================================================
+
 
 @router.post("/webhooks/stripe", tags=["webhooks"])
 async def stripe_webhook(request: Request):
@@ -1553,18 +1568,17 @@ async def stripe_webhook(request: Request):
         return error_response(
             error="Bad Request",
             message="Missing stripe-signature header",
-            status_code=400
+            status_code=400,
         )
 
     if not stripe_client.verify_webhook_signature(body, signature):
         return error_response(
-            error="Unauthorized",
-            message="Invalid webhook signature",
-            status_code=401
+            error="Unauthorized", message="Invalid webhook signature", status_code=401
         )
 
     try:
         import json
+
         event = json.loads(body)
 
         # Handle subscription events
@@ -1575,17 +1589,13 @@ async def stripe_webhook(request: Request):
                 return error_response(
                     error="Webhook Error",
                     message=result.get("message"),
-                    status_code=500
+                    status_code=500,
                 )
 
         return {"status": "received"}
     except Exception as e:
         logger.error(f"Webhook error: {str(e)}")
-        return error_response(
-            error="Webhook Error",
-            message=str(e),
-            status_code=500
-        )
+        return error_response(error="Webhook Error", message=str(e), status_code=500)
 
 
 @router.get("/subscriptions/me", tags=["subscriptions"])
@@ -1606,13 +1616,11 @@ def get_my_subscription(
         return SubscriptionStatusResponse(
             is_subscriber=subscription.status == "active",
             subscription=sub_data,
-            copies_remaining=copies_remaining
+            copies_remaining=copies_remaining,
         )
 
     return SubscriptionStatusResponse(
-        is_subscriber=False,
-        subscription=None,
-        copies_remaining=0
+        is_subscriber=False, subscription=None, copies_remaining=0
     )
 
 
@@ -1628,15 +1636,14 @@ def create_subscription_checkout(
         return error_response(
             error="Configuration Error",
             message="Premium plan not configured",
-            status_code=500
+            status_code=500,
         )
 
     try:
         # Create or get Stripe customer
         if not current_user.stripe_customer_id:
             current_user.stripe_customer_id = stripe_client.create_customer(
-                current_user.email,
-                current_user.username
+                current_user.email, current_user.username
             )
             session.add(current_user)
             session.commit()
@@ -1652,11 +1659,7 @@ def create_subscription_checkout(
         return {"sessionId": session_id}
     except Exception as e:
         logger.error(f"Checkout error: {str(e)}")
-        return error_response(
-            error="Stripe Error",
-            message=str(e),
-            status_code=500
-        )
+        return error_response(error="Stripe Error", message=str(e), status_code=500)
 
 
 @router.post("/flows/{flow_id}/copy", tags=["flows", "monetization"])
@@ -1684,18 +1687,14 @@ def record_flow_copy(
     flow = session.get(Prompt, flow_id)
     if not flow:
         return error_response(
-            error="Not Found",
-            message="Flow not found",
-            status_code=404
+            error="Not Found", message="Flow not found", status_code=404
         )
 
     # Check subscription
     subscription = get_subscription_by_user(session, current_user.id)
     if not subscription or subscription.status != "active":
         return error_response(
-            error="Forbidden",
-            message="Premium subscription required",
-            status_code=403
+            error="Forbidden", message="Premium subscription required", status_code=403
         )
 
     # Check if already copied this month
@@ -1703,7 +1702,7 @@ def record_flow_copy(
         return error_response(
             error="Conflict",
             message="You've already copied this flow this month",
-            status_code=409
+            status_code=409,
         )
 
     # Check copy limit
@@ -1712,7 +1711,7 @@ def record_flow_copy(
         return error_response(
             error="Limit Exceeded",
             message="You've reached your monthly copy limit (100)",
-            status_code=429
+            status_code=429,
         )
 
     try:
@@ -1741,20 +1740,14 @@ def record_flow_copy(
             copied_at=copy.copied_at,
             copies_this_month=new_copy_count,
             copies_remaining=max(0, 100 - new_copy_count),
-            payout_earned=payout_earned
+            payout_earned=payout_earned,
         )
     except ValueError as e:
-        return error_response(
-            error="Bad Request",
-            message=str(e),
-            status_code=400
-        )
+        return error_response(error="Bad Request", message=str(e), status_code=400)
     except Exception as e:
         logger.error(f"Copy tracking error: {str(e)}")
         return error_response(
-            error="Server Error",
-            message="Failed to record copy",
-            status_code=500
+            error="Server Error", message="Failed to record copy", status_code=500
         )
 
 
@@ -1780,7 +1773,7 @@ def get_my_earnings(
             amount_cents=p.amount_cents,
             amount_dollars=p.amount_cents / 100,
             status=p.status,
-            paid_at=p.paid_at
+            paid_at=p.paid_at,
         )
         for p in payouts
     ]
@@ -1792,7 +1785,7 @@ def get_my_earnings(
         account_balance_dollars=account_balance_cents / 100,
         total_earnings_cents=total_earnings_cents,
         total_earnings_dollars=total_earnings_cents / 100,
-        monthly_earnings=monthly_earnings
+        monthly_earnings=monthly_earnings,
     )
 
 
@@ -1823,8 +1816,14 @@ def start_stripe_connect_onboarding(
         return {"onboarding_url": link.url}
     except Exception as e:
         logger.error(f"Stripe Connect error: {str(e)}")
-        return error_response(
-            error="Stripe Error",
-            message=str(e),
-            status_code=500
-        )
+        return error_response(error="Stripe Error", message=str(e), status_code=500)
+
+
+# ============================================================================
+# CONNECTION MANAGER ENDPOINTS
+# ============================================================================
+
+from connections_routes import router as connections_router
+
+# Include connections router
+app.include_router(connections_router)

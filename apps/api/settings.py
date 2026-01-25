@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     # Frontend settings (for redirects)
     frontend_url: str = "http://localhost:3000"
 
+    # Encryption settings for credential vault
+    encryption_key: str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"  # 64 hex chars = 32 bytes
+
     # Exact-match allowlist of redirect URIs we will accept in OAuth flows.
     # Comma-separated list.
     # NOTE: exact-match allowlist. Include dev callback routes here.
