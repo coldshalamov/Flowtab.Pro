@@ -9,7 +9,7 @@ import hashlib
 import logging
 import time
 import urllib.parse
-from typing import Literal
+from typing import Literal, Any
 
 from fastapi import APIRouter, Depends, Query, Header, Response, status
 from fastapi.responses import JSONResponse
@@ -180,7 +180,7 @@ def _is_testing() -> bool:
     return os.getenv("TESTING") == "true"
 
 
-def _require_oauth_config(provider: str) -> tuple[str, str] | JSONResponse:
+def _require_oauth_config(provider: str) -> tuple[str, str] | Any:
     """Return (client_id, client_secret) for provider, or JSONResponse on error."""
 
     def err(name: str) -> JSONResponse:
@@ -333,7 +333,7 @@ def _oauth_authorize_url(
     response_model=OAuthStartResponse,
     tags=["auth"],
 )
-def oauth_start(provider: str, redirect_uri: str) -> OAuthStartResponse | JSONResponse:
+def oauth_start(provider: str, redirect_uri: str) -> OAuthStartResponse | Any:
     provider = provider.lower()
     if provider not in {"google", "github", "facebook"}:
         return error_response(
@@ -423,7 +423,7 @@ def _oauth_fetch_profile(
     payload: OAuthExchangeRequest,
     client_id: str,
     client_secret: str,
-) -> tuple[str, str, str | None] | JSONResponse:
+) -> tuple[str, str, str | None] | Any:
     """Return (provider_user_id, email, name) or JSONResponse on error."""
 
     try:
@@ -616,7 +616,7 @@ def oauth_exchange_code(
     provider: str,
     payload: OAuthExchangeRequest,
     session: Session = Depends(get_session),
-) -> Token | JSONResponse:
+) -> Token | Any:
     """Exchange an OAuth authorization code for a Flowtab JWT.
 
     Security:
@@ -818,7 +818,7 @@ def list_prompts(
         default=20, ge=1, le=100, description="Number of items per page"
     ),
     session: Session = Depends(get_session),
-) -> PromptListResponse | JSONResponse:
+) -> PromptListResponse | Any:
     """
     List all prompts with optional filtering, search, and pagination.
 
@@ -871,7 +871,7 @@ def list_prompts(
 )
 def get_prompt(
     slug: str, session: Session = Depends(get_session)
-) -> PromptRead | JSONResponse:
+) -> PromptRead | Any:
     """
     Get a single prompt by slug.
 
@@ -902,7 +902,7 @@ def get_prompt(
 
 
 @router.get("/tags", response_model=TagsResponse, status_code=status.HTTP_200_OK)
-def list_tags(session: Session = Depends(get_session)) -> TagsResponse | JSONResponse:
+def list_tags(session: Session = Depends(get_session)) -> TagsResponse | Any:
     """
     Get all available tags.
 
@@ -926,7 +926,7 @@ def create_new_prompt(
     prompt: PromptCreate,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> PromptRead | JSONResponse:
+) -> PromptRead | Any:
     """
     Create a new prompt.
 
@@ -963,7 +963,7 @@ def create_new_prompt(
 def list_prompt_comments(
     slug: str,
     session: Session = Depends(get_session),
-) -> CommentListResponse | JSONResponse:
+) -> CommentListResponse | Any:
     """List all comments for a prompt (public)."""
 
     try:
@@ -998,7 +998,7 @@ def create_prompt_comment(
     payload: CommentCreate,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> CommentRead | JSONResponse:
+) -> CommentRead | Any:
     """Create a new comment for a prompt (authenticated)."""
 
     try:
@@ -1045,7 +1045,7 @@ def like_prompt(
     slug: str,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> LikeStatusResponse | JSONResponse:
+) -> Any:
     """Idempotently like a prompt (flow)."""
 
     try:
@@ -1099,7 +1099,7 @@ def unlike_prompt(
     slug: str,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> LikeStatusResponse | JSONResponse:
+) -> Any:
     """Idempotently unlike a prompt (flow)."""
 
     try:
@@ -1153,7 +1153,7 @@ def like_comment(
     comment_id: str,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> LikeStatusResponse | JSONResponse:
+) -> Any:
     """Idempotently like a comment."""
 
     try:
@@ -1207,7 +1207,7 @@ def unlike_comment(
     comment_id: str,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> LikeStatusResponse | JSONResponse:
+) -> Any:
     """Idempotently unlike a comment."""
 
     try:
@@ -1262,7 +1262,7 @@ def delete_comment_by_id(
     comment_id: str,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> Response | JSONResponse:
+) -> Any:
     """Delete a comment if you are its author (or a superuser)."""
 
     try:
@@ -1311,7 +1311,7 @@ def delete_existing_prompt(
     slug: str,
     current_user: User = Depends(get_current_superuser),
     session: Session = Depends(get_session),
-) -> Response | JSONResponse:
+) -> Any:
     """
     Delete a prompt by slug.
 
@@ -1351,7 +1351,7 @@ def patch_existing_prompt(
     prompt_update: PromptUpdate,
     current_user: User = Depends(get_current_superuser),
     session: Session = Depends(get_session),
-) -> PromptRead | JSONResponse:
+) -> Any:
     """
     Update an existing prompt by slug.
 
@@ -1392,7 +1392,7 @@ def save_prompt_endpoint(
     slug: str,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> LikeStatusResponse | JSONResponse:
+) -> Any:
     """Bookmark (save) a prompt."""
     prompt = get_prompt_by_slug(session=session, slug=slug)
     if not prompt:
@@ -1425,7 +1425,7 @@ def unsave_prompt_endpoint(
     slug: str,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> LikeStatusResponse | JSONResponse:
+) -> Any:
     """Remove bookmark (unsave) from a prompt."""
     prompt = get_prompt_by_slug(session=session, slug=slug)
     if not prompt:
@@ -1455,7 +1455,7 @@ def unsave_prompt_endpoint(
 def connect_stripe_account(
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> dict | JSONResponse:
+) -> Any:
     """Create a Stripe Express account for the user and return onboarding link."""
     if not settings.stripe_secret_key:
         return error_response(
@@ -1495,7 +1495,7 @@ def buy_prompt(
     slug: str,
     current_user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session),
-) -> dict | JSONResponse:
+) -> Any:
     """Create a payment intent to purchase a prompt."""
     if not settings.stripe_secret_key:
         return error_response(
