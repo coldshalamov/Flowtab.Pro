@@ -15,6 +15,16 @@ const WORKS_WITH_MAP: Record<string, string> = {
 
 export function PromptCard({ prompt }: { prompt: Prompt }) {
     const isDraft = prompt.tags.includes("Draft") || prompt.title.includes("Draft");
+    const creatorName = prompt.author_id || "Flowtab";
+    const lastUpdated = prompt.updatedAt
+        ? new Date(prompt.updatedAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        })
+        : "Unknown";
+    const stepsCount = prompt.steps?.length || 0;
+    const estimatedMinutes = stepsCount > 0 ? Math.max(1, Math.round(stepsCount * 2)) : null;
 
     // Normalize worksWith to lowercase for mapping
     const worksWithLogos = (prompt.worksWith || []).map(w => ({
@@ -37,6 +47,14 @@ export function PromptCard({ prompt }: { prompt: Prompt }) {
                     <CardTitle className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1">
                         {prompt.title}
                     </CardTitle>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground/80 sm:text-xs">
+                        <span className="truncate">By {creatorName}</span>
+                        <span>Updated {lastUpdated}</span>
+                        <span>
+                            {estimatedMinutes ? `Est. ${estimatedMinutes} min` : "Est. —"} · {stepsCount}{" "}
+                            {stepsCount === 1 ? "step" : "steps"}
+                        </span>
+                    </div>
                     <p className="text-sm text-muted-foreground line-clamp-1 font-medium">
                         {prompt.summary}
                     </p>
