@@ -20,7 +20,7 @@ export default async function Home() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
-      <section className="relative flex flex-col items-center justify-center pt-32 pb-32 overflow-hidden bg-black border-b border-white/10 text-white">
+      <section className="relative flex flex-col items-center justify-center pt-32 pb-32 overflow-hidden bg-gradient-to-b from-black via-black to-zinc-950 border-b border-white/10 text-white">
 
         {/* Dynamic Space Background */}
         <HeroBackground />
@@ -35,6 +35,7 @@ export default async function Home() {
         </div>
 
         <div className="relative z-10 max-w-4xl px-4 text-center space-y-8">
+          <span className="text-xs uppercase tracking-[0.4em] text-zinc-400">Flowtab</span>
           <h1 className="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tight text-white text-balance animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
             Operate With Autonomy
           </h1>
@@ -71,62 +72,67 @@ export default async function Home() {
           <FeaturedRotator flows={featuredPrompts.map(p => ({ title: p.title, slug: p.slug, like_count: p.like_count || 0 }))} />
         </div>
 
-        {/* Minimal Tech Stack */}
-        <div className="mt-24 w-full relative z-10 animate-in fade-in duration-1000 delay-500">
-          <div className="flex flex-col items-center gap-4 text-center px-4">
-            <div className="flex flex-col gap-24">
-              <span className="text-3xl font-bold tracking-tight text-white">Pick your Flowbot.</span>
-              <p className="text-xl md:text-2xl font-bold uppercase tracking-widest text-zinc-300">Works with:</p>
-            </div>
+      </section>
 
-            <div className="w-full max-w-5xl mx-auto border-white/10">
-              <div className="grid grid-cols-2 md:grid-cols-4">
-                <a href="https://www.perplexity.ai/comet" target="_blank" rel="noopener noreferrer" className="group p-8 flex justify-center items-center transition-colors">
-                  <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 opacity-50 group-hover:opacity-100 transition-all duration-300">
-                    <Image src="/images/logos/comet.webp" alt="Comet" width={60} height={60} className="object-contain invert dark:invert-0" />
-                    <span className="text-lg font-semibold text-white">Comet</span>
-                  </div>
-                </a>
-                <a href="https://manus.im/features/manus-browser-operator" target="_blank" rel="noopener noreferrer" className="group p-8 flex justify-center items-center transition-colors">
-                  <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 opacity-50 group-hover:opacity-100 transition-all duration-300">
-                    <Image src="/images/logos/manus.png" alt="Manus" width={60} height={60} className="object-contain invert dark:invert-0" />
-                    <span className="text-lg font-semibold text-white">Manus</span>
-                  </div>
-                </a>
-                <a href="https://www.opera.com/browsers/neon" target="_blank" rel="noopener noreferrer" className="group p-8 flex justify-center items-center transition-colors">
-                  <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 opacity-50 group-hover:opacity-100 transition-all duration-300">
-                    <Image src="/images/logos/neon.jpg" alt="Neon" width={70} height={70} className="object-contain rounded-full" />
-                    <span className="text-lg font-semibold text-white">Neon</span>
-                  </div>
-                </a>
-                <a href="https://chatgpt.com/atlas/" target="_blank" rel="noopener noreferrer" className="group p-8 flex justify-center items-center transition-colors">
-                  <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 opacity-50 group-hover:opacity-100 transition-all duration-300">
-                    <Image src="/images/logos/atlas.png" alt="Atlas" width={60} height={60} className="object-contain invert dark:invert-0" />
-                    <span className="text-lg font-semibold text-white">Atlas</span>
-                  </div>
-                </a>
-              </div>
+      {/* Compatibility Section */}
+      <section className="relative border-y border-border/60 bg-gradient-to-b from-zinc-950 via-background to-background">
+        <div className="container py-20 md:py-28 space-y-12 px-4 max-w-screen-2xl mx-auto">
+          <div className="space-y-3 text-center">
+            <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Compatibility</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">Pick your Flowbot.</h2>
+            <p className="text-muted-foreground font-medium">Flows pair with the newest browser agents.</p>
+          </div>
+
+          <div className="w-full max-w-5xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 rounded-2xl border border-border/60 bg-background/40 backdrop-blur-sm">
+              <a href="https://www.perplexity.ai/comet" target="_blank" rel="noopener noreferrer" className="group p-8 flex justify-center items-center transition-colors">
+                <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 opacity-50 group-hover:opacity-100 transition-all duration-300">
+                  <Image src="/images/logos/comet.webp" alt="Comet" width={60} height={60} className="object-contain invert dark:invert-0" />
+                  <span className="text-lg font-semibold text-foreground">Comet</span>
+                </div>
+              </a>
+              <a href="https://manus.im/features/manus-browser-operator" target="_blank" rel="noopener noreferrer" className="group p-8 flex justify-center items-center transition-colors">
+                <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 opacity-50 group-hover:opacity-100 transition-all duration-300">
+                  <Image src="/images/logos/manus.png" alt="Manus" width={60} height={60} className="object-contain invert dark:invert-0" />
+                  <span className="text-lg font-semibold text-foreground">Manus</span>
+                </div>
+              </a>
+              <a href="https://www.opera.com/browsers/neon" target="_blank" rel="noopener noreferrer" className="group p-8 flex justify-center items-center transition-colors">
+                <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 opacity-50 group-hover:opacity-100 transition-all duration-300">
+                  <Image src="/images/logos/neon.jpg" alt="Neon" width={70} height={70} className="object-contain rounded-full" />
+                  <span className="text-lg font-semibold text-foreground">Neon</span>
+                </div>
+              </a>
+              <a href="https://chatgpt.com/atlas/" target="_blank" rel="noopener noreferrer" className="group p-8 flex justify-center items-center transition-colors">
+                <div className="flex items-center gap-3 grayscale group-hover:grayscale-0 opacity-50 group-hover:opacity-100 transition-all duration-300">
+                  <Image src="/images/logos/atlas.png" alt="Atlas" width={60} height={60} className="object-contain invert dark:invert-0" />
+                  <span className="text-lg font-semibold text-foreground">Atlas</span>
+                </div>
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Section */}
-      <section className="container py-20 md:py-32 space-y-12 px-4 max-w-screen-2xl mx-auto">
-        <div className="flex items-end justify-between border-b-2 border-border/60 pb-6">
-          <div className="space-y-1">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">Featured Flows</h2>
-            <p className="text-muted-foreground font-medium">Curated high-performance workflows.</p>
+      {/* Library Preview Section */}
+      <section className="bg-gradient-to-b from-background via-background to-muted/30">
+        <div className="container py-20 md:py-32 space-y-12 px-4 max-w-screen-2xl mx-auto">
+          <div className="flex flex-col gap-6 border-b border-border/60 pb-6 md:flex-row md:items-end md:justify-between">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Library Preview</p>
+              <h2 className="text-3xl font-bold tracking-tight text-foreground">Featured Flows</h2>
+              <p className="text-muted-foreground font-medium">Curated high-performance workflows.</p>
+            </div>
+            <Link href="/library" className="group text-sm font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1">
+              View Library <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
-          <Link href="/library" className="group text-sm font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1">
-            View Library <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredPrompts.map((prompt: Prompt) => (
-            <PromptCard key={prompt.id} prompt={prompt} />
-          ))}
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredPrompts.map((prompt: Prompt) => (
+              <PromptCard key={prompt.id} prompt={prompt} />
+            ))}
+          </div>
         </div>
       </section>
     </div>
