@@ -75,7 +75,7 @@ function DiscussionCard({ discussion }: { discussion: Prompt }) {
                         <span>•</span>
                         <div className="flex items-center gap-1.5 text-gray-400">
                             <MessageSquare size={14} />
-                            <span>{0} comments</span> {/* TODO: Add comment count to list response */}
+                            <span>{discussion.comment_count || 0} comments</span>
                         </div>
                     </div>
                 </div>

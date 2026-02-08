@@ -137,7 +137,7 @@ export function ParticleStorm() {
         const mouse = { x: 0, y: 0 };
         const momentum = { x: 0, y: 0 };
         let mouseInView = false;
-        let lastTime = 0;
+        const lastTime = 0;
 
         const handleMouseMove = (e: MouseEvent) => {
             mouseInView = true;

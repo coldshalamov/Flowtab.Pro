@@ -81,7 +81,11 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                                     variant="default"
                                     className="h-12 w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold uppercase tracking-widest text-xs"
                                 />
-                                <SaveButton className="h-12 w-full font-bold uppercase tracking-widest text-xs" />
+                                <SaveButton 
+                                    slug={prompt.slug}
+                                    initialCount={prompt.saves_count ?? 0}
+                                    className="h-12 w-full font-bold uppercase tracking-widest text-xs"
+                                />
                             </div>
 
                             <div className="pt-4 border-t border-border flex justify-between items-center">
@@ -124,7 +128,7 @@ export default async function PromptDetailPage(props: { params: Promise<{ slug: 
                                 <div className="space-y-3">
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 bg-secondary/50 px-2 py-1 rounded inline-block">Inputs</span>
                                     <div className="p-4 rounded-lg bg-secondary/20 border border-border/50 text-xs font-mono text-muted-foreground">
-                                        // Standard inputs inferred
+                                        {"// Standard inputs inferred"}
                                         <br /> TARGET_URL: &quot;{prompt.targetSites[0] || "Any"}&quot;
                                     </div>
                                 </div>

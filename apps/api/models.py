@@ -70,6 +70,7 @@ class Prompt(SQLModel, table=True):
 
     like_count: int = Field(default=0, description="Number of likes")
     saves_count: int = Field(default=0, description="Number of bookmarks")
+    comment_count: int = Field(default=0, description="Number of comments")
 
     # Subscription fields
     is_premium: bool = Field(

@@ -350,6 +350,14 @@ def create_comment(
 ) -> Comment:
     comment = Comment(prompt_id=prompt_id, author_id=author_id, body=body)
     session.add(comment)
+    
+    # Increment prompt comment count
+    from apps.api.models import Prompt
+    prompt = session.get(Prompt, prompt_id)
+    if prompt:
+        prompt.comment_count = (prompt.comment_count or 0) + 1
+        session.add(prompt)
+    
     session.commit()
     session.refresh(comment)
     return comment
@@ -361,6 +369,13 @@ def get_comment_by_id(session: Session, comment_id: str) -> Comment | None:
 
 
 def delete_comment(session: Session, comment: Comment) -> None:
+    # Decrement prompt comment count
+    from apps.api.models import Prompt
+    prompt = session.get(Prompt, comment.prompt_id)
+    if prompt and prompt.comment_count and prompt.comment_count > 0:
+        prompt.comment_count -= 1
+        session.add(prompt)
+    
     session.delete(comment)
     session.commit()
 

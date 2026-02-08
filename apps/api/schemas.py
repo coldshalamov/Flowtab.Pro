@@ -159,6 +159,11 @@ class PromptRead(BaseModel):
         description="Number of bookmarks",
     )
 
+    comment_count: int = Field(
+        default=0,
+        description="Number of comments",
+    )
+
     price: int = Field(
         default=0,
         description="Price in cents",

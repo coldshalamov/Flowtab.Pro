@@ -11,15 +11,15 @@ from sqlmodel import Session, create_engine, select
 os.environ["TESTING"] = "true"
 
 from main import app
-from models import (
+from apps.api.models import (
     User,
     Provider,
     AccountConnection,
     CredentialVaultItem,
     ManualOverride,
 )
-from db import set_test_engine
-from encryption import encryption_service
+from apps.api.db import set_test_engine
+from apps.api.encryption import encryption_service
 
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def test_db():
     set_test_engine(engine)
 
     # Create tables
-    from models import SQLModel
+    from apps.api.models import SQLModel
 
     SQLModel.metadata.create_all(engine)
 

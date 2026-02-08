@@ -8,9 +8,9 @@ from sqlmodel import Session, select, col
 from sqlalchemy import and_
 from sqlalchemy.orm import selectinload
 
-from models import Provider, AccountConnection, CredentialVaultItem, ManualOverride
-from encryption import encryption_service
-from schemas import ConnectionCreate, ConnectionRead, ProviderRead
+from apps.api.models import Provider, AccountConnection, CredentialVaultItem, ManualOverride
+from apps.api.encryption import encryption_service
+from apps.api.schemas import ConnectionCreate, ConnectionRead, ProviderRead
 
 
 def get_providers(session: Session, active_only: bool = True) -> list[Provider]:

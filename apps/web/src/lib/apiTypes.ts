@@ -16,6 +16,7 @@ export interface Prompt {
   updatedAt: string; // ISO
   like_count?: number;
   saves_count?: number;
+  comment_count?: number;
   type: "prompt" | "discussion";
   price: number;
   currency: string;
