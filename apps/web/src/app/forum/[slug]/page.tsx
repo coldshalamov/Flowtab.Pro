@@ -1,6 +1,7 @@
 import { fetchPrompt } from "@/lib/api";
-import CommentsSection from "@/components/CommentsSection";
+import { CommentsSection } from "@/components/CommentsSection";
 import ReactMarkdown from "react-markdown";
+import { Suspense } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { User, MessageSquare, Clock } from "lucide-react";
 import Link from "next/link";
@@ -67,7 +68,9 @@ export default async function ThreadDetailPage({
                         <h2 className="text-2xl font-semibold">Comments</h2>
                     </div>
 
-                    <CommentsSection slug={params.slug} />
+                    <Suspense fallback={<div className="text-sm text-gray-500">Loading comments...</div>}>
+                        <CommentsSection promptSlug={params.slug} promptId={discussion.id} />
+                    </Suspense>
                 </div>
             </div>
         </div>
