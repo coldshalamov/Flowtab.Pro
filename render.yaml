@@ -19,4 +19,4 @@ databases:
   - name: flowtab-db
     databaseName: flowtab
     user: flowtab_user
-    plan: free
+    plan: basic-256mb
